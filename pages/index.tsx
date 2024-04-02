@@ -1,10 +1,8 @@
-import * as React from "react";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Link from "../components/Link";
-import ProTip from "../components/ProTip";
-import DrawerAppBar from "../components/DrawerAppBar";
+import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
 export default function Home() {
   return (
@@ -18,14 +16,13 @@ export default function Home() {
           alignItems: "center",
         }}
       >
-        <DrawerAppBar></DrawerAppBar>
+        <ResponsiveAppBar></ResponsiveAppBar>
         <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
           Material UI - Next.js example in TypeScript
         </Typography>
         <Link href="/about" color="secondary">
           Go to the about page
         </Link>
-        <ProTip />
       </Box>
     </Container>
   );

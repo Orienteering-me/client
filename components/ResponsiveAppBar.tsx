@@ -12,11 +12,16 @@ import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 
 const pages = [
-  "Mi cuenta",
-  "Recorridos guardados",
-  "Crear recorrido",
-  "Recorridos creados",
-  "Cerrar sesión",
+  { text: "Iniciar sesión", route: "login" },
+  { text: "Registrarme", route: "register" },
+];
+
+const pages2 = [
+  { text: "Mi cuenta", route: "account" },
+  { text: "Recorridos guardados", route: "saved_courses" },
+  { text: "Crear recorrido", route: "new_course" },
+  { text: "Recorridos creados", route: "created_courses" },
+  { text: "Cerrar sesión", route: "logout" },
 ];
 
 function ResponsiveAppBar() {
@@ -114,8 +119,13 @@ function ResponsiveAppBar() {
               onClose={handleCloseUserMenu}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{page}</Typography>
+                <MenuItem
+                  key={page.text}
+                  onClick={handleCloseUserMenu}
+                  component="a"
+                  href={page.route}
+                >
+                  <Typography textAlign="center">{page.text}</Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -125,4 +135,5 @@ function ResponsiveAppBar() {
     </AppBar>
   );
 }
+
 export default ResponsiveAppBar;

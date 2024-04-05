@@ -1,0 +1,7 @@
+html {
+  padding: 0;
+}
+
+.leaflet-container {
+  height: 100vh;
+}

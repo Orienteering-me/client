@@ -9,7 +9,7 @@ const OpenStreetMap = dynamic(() => import("../components/OpenStreetMap"), {
   ssr: false,
 });
 
-export default function Home() {
+export default function Account() {
   return (
     <Container maxWidth="lg" style={{ width: "100%" }}>
       <Box

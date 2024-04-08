@@ -35,6 +35,7 @@ function ResponsiveAppBar() {
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
   };
+
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -51,7 +52,7 @@ function ResponsiveAppBar() {
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Box component="a" href="#" sx={{ display: "flex", mr: 1 }}>
+          <Box component="a" href="." sx={{ display: "flex", mr: 1 }}>
             <Box
               component="img"
               sx={{
@@ -65,7 +66,7 @@ function ResponsiveAppBar() {
             variant="h6"
             noWrap
             component="a"
-            href="#"
+            href="."
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },

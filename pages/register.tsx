@@ -81,6 +81,7 @@ export default function Register() {
             "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
           );
         }
+        router.push("login");
       } catch (error) {
         if (error.response.status == 409) {
           alert(
@@ -277,7 +278,12 @@ export default function Register() {
             <Button
               type="submit"
               variant="contained"
-              style={{ marginTop: 15, marginBottom: 5, color: "white" }}
+              style={{
+                marginTop: 15,
+                marginBottom: 5,
+                color: "white",
+                fontWeight: 700,
+              }}
             >
               Crear cuenta
             </Button>

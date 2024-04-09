@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 import {
   Alert,
   Box,
@@ -16,10 +17,12 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
+import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -31,12 +34,35 @@ export default function Login() {
     event.preventDefault();
   };
 
-  function handleSubmit(event: any) {
+  async function handleSubmit(event: any) {
     event.preventDefault();
-    const loginData = {
-      email: email,
-      password: password,
-    };
+
+    try {
+      const response = await axios.post("http://127.0.0.1:3000/login", {
+        email: email,
+        password: password,
+      });
+
+      console.log(response.data);
+      if (response.status == 200) {
+        localStorage.setItem("jwt-token", response.data.token);
+        setEmail("");
+        setPassword("");
+        router.push(".");
+      } else {
+        alert(
+          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
+        );
+      }
+    } catch (error) {
+      if (error.response.status == 404) {
+        alert("La cuneta introducida no existe.");
+      } else {
+        alert(
+          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+        );
+      }
+    }
   }
 
   return (
@@ -123,7 +149,12 @@ export default function Login() {
             <Button
               type="submit"
               variant="contained"
-              style={{ marginTop: 15, marginBottom: 5, color: "white" }}
+              style={{
+                marginTop: 15,
+                marginBottom: 5,
+                color: "white",
+                fontWeight: 700,
+              }}
             >
               Iniciar sesión
             </Button>

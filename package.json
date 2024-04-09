@@ -17,6 +17,7 @@
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@mui/material-nextjs": "latest",
+    "axios": "^1.6.8",
     "leaflet": "^1.9.4",
     "next": "latest",
     "react": "latest",

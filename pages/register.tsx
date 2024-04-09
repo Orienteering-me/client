@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import PasswordStrengthBar from "react-password-strength-bar";
+import axios from "axios";
 
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
@@ -50,7 +51,7 @@ export default function Register() {
     event.preventDefault();
   };
 
-  function handleSubmit(event: any) {
+  async function handleSubmit(this: any, event: any) {
     event.preventDefault();
     setEmailError(
       !email.match(
@@ -64,12 +65,34 @@ export default function Register() {
     );
     setRepeatedPasswordError(password != repeatedPassword);
 
-    const user = {
-      email: email,
-      name: name,
-      phone_number: phone_number,
-      password: password,
-    };
+    if (!emailError && !passwordError && !repeatedPasswordError) {
+      try {
+        const response = await axios.post("http://127.0.0.1:3000/users", {
+          email: email,
+          name: name,
+          phone_number: phone_number,
+          password: password,
+        });
+
+        if (response.status == 201) {
+          alert("Te has registrado correctamente.");
+        } else {
+          alert(
+            "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
+          );
+        }
+      } catch (error) {
+        if (error.response.status == 409) {
+          alert(
+            "Ya existe una cuenta registrada con esta dirección de correo."
+          );
+        } else {
+          alert(
+            "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+          );
+        }
+      }
+    }
   }
 
   return (

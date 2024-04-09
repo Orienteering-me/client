@@ -18,6 +18,7 @@ import PasswordStrengthBar from "react-password-strength-bar";
 import axios from "axios";
 
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
+import { useRouter } from "next/router";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,7 @@ export default function Register() {
   const [phone_number, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [repeatedPassword, setRepeatedPassword] = useState("");
+  const router = useRouter();
 
   const [passwordScore, setPasswordScore] = useState(0);
   const [showPassword, setShowPassword] = useState(false);

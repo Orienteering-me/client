@@ -5,10 +5,8 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
 import Container from "@mui/material/Container";
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 
 const pages = [
@@ -16,7 +14,7 @@ const pages = [
   { text: "Registrarme", route: "register" },
 ];
 
-const pages2 = [
+const authenticatedPages = [
   { text: "Mi cuenta", route: "account" },
   { text: "Recorridos guardados", route: "saved_courses" },
   { text: "Crear recorrido", route: "new_course" },
@@ -25,6 +23,13 @@ const pages2 = [
 ];
 
 function ResponsiveAppBar() {
+  const [authenticated, setAuthenticated] = React.useState(false);
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("jwt-token");
+    setAuthenticated(token != null);
+  }, []);
+
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -119,16 +124,27 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {pages.map((page) => (
-                <MenuItem
-                  key={page.text}
-                  onClick={handleCloseUserMenu}
-                  component="a"
-                  href={page.route}
-                >
-                  <Typography textAlign="center">{page.text}</Typography>
-                </MenuItem>
-              ))}
+              {authenticated
+                ? authenticatedPages.map((page) => (
+                    <MenuItem
+                      key={page.text}
+                      onClick={handleCloseUserMenu}
+                      component="a"
+                      href={page.route}
+                    >
+                      <Typography textAlign="center">{page.text}</Typography>
+                    </MenuItem>
+                  ))
+                : pages.map((page) => (
+                    <MenuItem
+                      key={page.text}
+                      onClick={handleCloseUserMenu}
+                      component="a"
+                      href={page.route}
+                    >
+                      <Typography textAlign="center">{page.text}</Typography>
+                    </MenuItem>
+                  ))}
             </Menu>
           </Box>
         </Toolbar>

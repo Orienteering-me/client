@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
-import Link from "next/link";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import axios from "axios";
 
@@ -205,7 +204,6 @@ export default function Account() {
             {userData.phone_number}
           </Typography>
           <Button
-            type="submit"
             variant="contained"
             style={{
               marginTop: 15,

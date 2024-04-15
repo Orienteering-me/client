@@ -161,7 +161,6 @@ export default function Login() {
           </Box>
         </form>
       </Box>
-      Photo by <a href="https://martinvorel.com/">Martin Vorel</a>
     </Container>
   );
 }

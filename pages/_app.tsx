@@ -6,6 +6,8 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "../components/theme";
 import "../styles/globals.css";
+import { Box, Container } from "@mui/material";
+import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
@@ -17,7 +19,20 @@ export default function MyApp(props: AppProps) {
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <Component {...pageProps} />
+        <Container maxWidth="lg" style={{ width: "100%" }}>
+          <Box
+            sx={{
+              my: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ResponsiveAppBar></ResponsiveAppBar>
+            <Component {...pageProps} />
+          </Box>
+        </Container>
       </ThemeProvider>
     </AppCacheProvider>
   );

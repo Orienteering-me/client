@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Modal, Typography } from "@mui/material";
 import axios from "axios";
+import FormDialog from "../components/FormDialog";
 
 export default function Account() {
   const [token, setToken] = useState("");
@@ -15,11 +16,14 @@ export default function Account() {
     setToken(token!);
 
     try {
-      const response = await axios.get("http://127.0.0.1:3000/users", {
-        headers: {
-          "jwt-token": token,
-        },
-      });
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URI}/users`,
+        {
+          headers: {
+            "jwt-token": token,
+          },
+        }
+      );
 
       if (response.status == 200) {
         setUserData(response.data);
@@ -28,7 +32,17 @@ export default function Account() {
           "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      if (error.response.status == 401) {
+        alert("No tienes permisos para acceder a este recurso.");
+      } else if (error.response.status == 404) {
+        alert("La cuenta actual no existe.");
+      } else {
+        alert(
+          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+        );
+      }
+    }
   }
 
   useEffect(() => {
@@ -192,18 +206,7 @@ export default function Account() {
       >
         {userData.phone_number}
       </Typography>
-      <Button
-        variant="contained"
-        style={{
-          marginTop: 15,
-          marginBottom: 5,
-          color: "white",
-          backgroundColor: "red",
-          fontWeight: 700,
-        }}
-      >
-        Borrar cuenta
-      </Button>
+      <FormDialog></FormDialog>
     </Box>
   );
 }

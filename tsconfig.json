@@ -16,6 +16,12 @@
     "jsxImportSource": "@emotion/react",
     "incremental": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "components/AppBar"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "components/AppBar",
+    "components/OpenStreetMapCreate.tsx"
+  ],
   "exclude": ["node_modules"]
 }

@@ -35,10 +35,13 @@ export default function Login() {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://127.0.0.1:3000/login", {
-        email: email,
-        password: password,
-      });
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URI}/login`,
+        {
+          email: email,
+          password: password,
+        }
+      );
 
       console.log(response.data);
       if (response.status == 200) {
@@ -52,6 +55,9 @@ export default function Login() {
         );
       }
     } catch (error) {
+      if (error.response.status == 401) {
+        alert("La contraseña introducida es incorrecta.");
+      }
       if (error.response.status == 404) {
         alert("La cuenta introducida no existe.");
       } else {

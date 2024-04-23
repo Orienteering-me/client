@@ -14,8 +14,9 @@ import {
 import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import PasswordStrengthBar from "react-password-strength-bar";
-import axios from "axios";
 import { useRouter } from "next/router";
+import axios from "axios";
+import bcrypt from "bcryptjs";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -67,12 +68,17 @@ export default function Register() {
 
     if (!emailError && !passwordError && !repeatedPasswordError) {
       try {
-        const response = await axios.post("http://127.0.0.1:3000/users", {
-          email: email,
-          name: name,
-          phone_number: phone_number,
-          password: password,
-        });
+        const hashedPassword = bcrypt.hashSync(password);
+
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URI}/users`,
+          {
+            email: email,
+            name: name,
+            phone_number: phone_number,
+            password: password,
+          }
+        );
 
         if (response.status == 201) {
           alert("Te has registrado correctamente.");

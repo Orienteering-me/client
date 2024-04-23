@@ -16,9 +16,9 @@ const pages = [
 
 const authenticatedPages = [
   { text: "Mi cuenta", route: "account" },
-  { text: "Recorridos guardados", route: "saved_courses" },
-  { text: "Crear recorrido", route: "new_course" },
-  { text: "Recorridos creados", route: "created_courses" },
+  { text: "Carreras favoritas", route: "saved_courses" },
+  { text: "Crear carrera", route: "new_course" },
+  { text: "Carreras creadas", route: "created_courses" },
   { text: "Cerrar sesión", route: "logout" },
 ];
 

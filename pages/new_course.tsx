@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Modal, TextField, Typography } from "@mui/material";
-import axios from "axios";
-import FormDialog from "../components/FormDialog";
 import dynamic from "next/dynamic";
 
-const OpenStreetMapCreateCourse = dynamic(
-  () => import("../components/OpenStreetMapCreate"),
+const CreateCourseForm = dynamic(
+  () => import("../components/CreateCourseForm"),
   {
     ssr: false,
   }
 );
 
-export default function Account() {
+export default function NewCourse() {
   const [token, setToken] = useState("");
-  const [name, setName] = useState("");
 
   async function getData() {
     const token = localStorage.getItem("jwt-token");
@@ -102,46 +99,7 @@ export default function Account() {
         borderRadius: "25px",
       }}
     >
-      <form>
-        <Typography
-          variant="h4"
-          noWrap
-          sx={{
-            mt: 2,
-            mb: 2,
-            display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
-          }}
-        >
-          Crear nueva carrera
-        </Typography>
-        <TextField
-          required
-          fullWidth
-          id="name-input"
-          label="Nombre de la carrera"
-          variant="outlined"
-          margin="normal"
-          onChange={(e) => setName(e.target.value)}
-          style={{ marginBottom: "3%" }}
-        />
-        <OpenStreetMapCreateCourse />
-        <Button
-          type="submit"
-          variant="contained"
-          style={{
-            marginTop: 25,
-            marginBottom: 10,
-            marginLeft: "5%",
-            color: "white",
-            fontWeight: 700,
-            width: "90%",
-          }}
-        >
-          Crear recorrido
-        </Button>
-      </form>
+      <CreateCourseForm />
     </Box>
   );
 }

@@ -1,5 +1,6 @@
 import { Button, CircularProgress, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
+import axios from "axios";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
@@ -7,13 +8,55 @@ const OpenStreetMap = dynamic(() => import("../components/OpenStreetMap"), {
   ssr: false,
 });
 
+interface CourseProps {
+  name: string;
+  admin: { _id: string; name: string };
+  checkpoints: [
+    { _id: string; number: number; lat: number; lng: number; qr_code: number }
+  ];
+}
+
 export default function Map() {
   const [token, setToken] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [courses, setCourses] = useState([]);
+
+  async function getData() {
+    const token = localStorage.getItem("jwt-token");
+
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URI}/courses`,
+        {
+          headers: {
+            "jwt-token": token,
+          },
+        }
+      );
+      if (response.status == 200) {
+        setCourses(response.data);
+      } else {
+        alert(
+          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
+        );
+      }
+    } catch (error) {
+      if (error.response.status == 401) {
+        alert("No tienes permisos para acceder a este recurso.");
+      } else if (error.response.status == 404) {
+        alert("La cuenta actual no existe.");
+      } else {
+        alert(
+          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+        );
+      }
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem("jwt-token");
     setToken(token!);
+    getData();
     setLoaded(true);
   }, []);
 
@@ -100,6 +143,17 @@ export default function Map() {
       );
     }
 
-    return <OpenStreetMap />;
+    return (
+      <OpenStreetMap
+        courses={courses.map((course: CourseProps) => {
+          return {
+            name: course.name,
+            admin: course.admin.name,
+            lat: course.checkpoints[0].lat,
+            lng: course.checkpoints[0].lng,
+          };
+        })}
+      />
+    );
   }
 }

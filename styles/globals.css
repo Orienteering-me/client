@@ -4,8 +4,9 @@ body {
   margin: 0;
   padding: 0;
   background-image: url("../public/background.jpg");
+  background-attachment: fixed;
 }
 
 .leaflet-container {
-  height: 100vh;
+  height: 70vh;
 }

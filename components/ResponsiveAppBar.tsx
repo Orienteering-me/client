@@ -55,7 +55,7 @@ function ResponsiveAppBar() {
 
   return (
     <AppBar position="static">
-      <Container maxWidth="xl">
+      <Container sx={{ width: "100%", m: 0 }}>
         <Toolbar disableGutters>
           <Box component="a" href="." sx={{ display: "flex", mr: 1 }}>
             <Box

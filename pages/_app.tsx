@@ -1,4 +1,3 @@
-import * as React from "react";
 import Head from "next/head";
 import { AppProps } from "next/app";
 import { AppCacheProvider } from "@mui/material-nextjs/v14-pagesRouter";
@@ -11,25 +10,26 @@ import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
+
   return (
     <AppCacheProvider {...props}>
       <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
       <ThemeProvider theme={theme}>
-        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
         <CssBaseline />
-        <Container maxWidth="lg" style={{ width: "100%" }}>
+        <Container maxWidth={false} disableGutters>
+          <ResponsiveAppBar></ResponsiveAppBar>
           <Box
             sx={{
               my: 4,
+              margin: 0,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <ResponsiveAppBar></ResponsiveAppBar>
             <Component {...pageProps} />
           </Box>
         </Container>

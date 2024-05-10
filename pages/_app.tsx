@@ -1,11 +1,10 @@
 import Head from "next/head";
 import { AppProps } from "next/app";
 import { AppCacheProvider } from "@mui/material-nextjs/v14-pagesRouter";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import theme from "../components/theme";
+import { Box, Container, CssBaseline, ThemeProvider } from "@mui/material";
 import "../styles/globals.css";
-import { Box, Container } from "@mui/material";
+
+import theme from "../components/theme";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 
 export default function MyApp(props: AppProps) {
@@ -18,18 +17,20 @@ export default function MyApp(props: AppProps) {
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Container maxWidth={false} disableGutters>
-          <ResponsiveAppBar></ResponsiveAppBar>
+        <Container
+          maxWidth={false}
+          disableGutters
+          sx={{ backgroundColor: "#FFDFC8", height: "100vh" }}
+        >
           <Box
             sx={{
-              my: 4,
-              margin: 0,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
             }}
           >
+            <ResponsiveAppBar></ResponsiveAppBar>
             <Component {...pageProps} />
           </Box>
         </Container>

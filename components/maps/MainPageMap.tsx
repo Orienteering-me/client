@@ -1,43 +1,38 @@
 import { useState, useRef, useEffect } from "react";
+import { Button, Typography } from "@mui/material";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Button, Typography } from "@mui/material";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-interface CourseProps {
-  name: string;
-  admin: string;
-  lat: number;
-  lng: number;
-}
-
 interface CoursesProps {
-  courses: CourseProps[];
+  courses: {
+    name: string;
+    admin: string;
+    lat: number;
+    lng: number;
+  }[];
 }
 
-const center = { lat: 40.421078, lng: -3.704622 };
+function MainPageMap({ courses }: CoursesProps) {
+  const center = { lat: 40.421078, lng: -3.704622 };
 
-function LocateMap() {
-  const map = useMap();
+  function LocateMap() {
+    const map = useMap();
 
-  useEffect(() => {
-    map.locate().on("locationfound", function (e) {
-      map.setView([e.latlng.lat, e.latlng.lng]);
-    });
-  }, [map]);
+    useEffect(() => {
+      map.zoomControl.setPosition("bottomright");
+      map.locate().on("locationfound", function (e) {
+        map.setView([e.latlng.lat, e.latlng.lng], 8);
+      });
+    }, [map]);
 
-  return null;
-}
-
-function OpenStreetMap({ courses }: CoursesProps) {
-  const [position, setPosition] = useState(center);
-  const markerRef = useRef(null);
-  const ZOOM_LEVEL = 8;
+    return null;
+  }
 
   return (
     <div className="container" style={{ height: "100%", width: "100%" }}>
-      <MapContainer center={center} zoom={ZOOM_LEVEL}>
+      <MapContainer center={center} zoom={5} maxZoom={17}>
         <LocateMap />
         <TileLayer
           attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
@@ -50,6 +45,7 @@ function OpenStreetMap({ courses }: CoursesProps) {
                 variant="h6"
                 noWrap
                 sx={{
+                  m: 2,
                   mb: 1,
                   display: "flex",
                   justifyContent: "center",
@@ -68,7 +64,7 @@ function OpenStreetMap({ courses }: CoursesProps) {
                 }}
                 color="primary"
               >
-                Ver datos carrera
+                Ver información
               </Button>
             </Popup>
           </Marker>
@@ -78,4 +74,4 @@ function OpenStreetMap({ courses }: CoursesProps) {
   );
 }
 
-export default OpenStreetMap;
+export default MainPageMap;

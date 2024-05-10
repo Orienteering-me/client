@@ -1,10 +1,10 @@
-import { Button, CircularProgress, Typography } from "@mui/material";
-import Box from "@mui/material/Box";
+import { Alert, Box, Button, Typography } from "@mui/material";
 import axios from "axios";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import LoadingBox from "../components/LoadingBox";
 
-const OpenStreetMap = dynamic(() => import("../components/OpenStreetMap"), {
+const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
 });
 
@@ -16,89 +16,89 @@ interface CourseProps {
   ];
 }
 
-export default function Map() {
+export default function Main() {
   const [token, setToken] = useState("");
-  const [loaded, setLoaded] = useState(false);
   const [courses, setCourses] = useState([]);
+
+  const [loaded, setLoaded] = useState(false);
+
+  const [errorRetrievingData, setErrorRetrievingData] = useState("");
 
   async function getData() {
     const token = localStorage.getItem("jwt-token");
 
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URI}/courses`,
-        {
-          headers: {
-            "jwt-token": token,
-          },
+    if (token) {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URI}/courses`,
+          {
+            headers: {
+              "jwt-token": token,
+            },
+          }
+        );
+        if (response.status == 200) {
+          setCourses(
+            response.data.map((course: CourseProps) => {
+              return {
+                name: course.name,
+                admin: course.admin.name,
+                lat: course.checkpoints[0].lat,
+                lng: course.checkpoints[0].lng,
+              };
+            })
+          );
+        } else {
+          setErrorRetrievingData(
+            "Ha ocurrido un error inesperado cargando las carreras disponibles."
+          );
         }
-      );
-      if (response.status == 200) {
-        setCourses(response.data);
-      } else {
-        alert(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
-      }
-    } catch (error) {
-      if (error.response.status == 401) {
-        alert("No tienes permisos para acceder a este recurso.");
-      } else if (error.response.status == 404) {
-        alert("La cuenta actual no existe.");
-      } else {
-        alert(
-          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
-        );
+      } catch (error: unknown) {
+        if (error.response.status == 401) {
+          setErrorRetrievingData(
+            "No tienes permisos para acceder a este recurso. Pruebe a volver a iniciar sesión."
+          );
+          console.log(error);
+        } else if (error.response.status == 404) {
+        } else {
+          setErrorRetrievingData(
+            "Ha ocurrido un error inesperado cargando las carreras disponibles."
+          );
+          console.log(error);
+        }
       }
     }
   }
 
   useEffect(() => {
     const token = localStorage.getItem("jwt-token");
+
     setToken(token!);
-    getData();
     setLoaded(true);
+
+    getData();
   }, []);
 
   if (!loaded) {
-    return (
-      <Box
-        sx={{
-          position: "relative",
-          marginTop: 0,
-          display: "flex",
-          justifyContent: "center",
-          width: "40%",
-        }}
-      >
-        <CircularProgress
-          color="primary"
-          style={{
-            position: "relative",
-            marginTop: "40%",
-          }}
-        />
-      </Box>
-    );
+    return <LoadingBox />;
   } else {
     if (!token) {
       return (
         <Box
           sx={{
-            my: 4,
+            mt: { xs: 15, md: 20 },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "left",
             padding: "2% 5%",
             backgroundColor: "#ffffff",
-            width: "80%",
+            width: { xs: "80%", md: "50%" },
             borderRadius: "25px",
           }}
         >
           <Typography
             variant="h4"
-            noWrap
             sx={{
               mt: 6,
               mb: 8,
@@ -106,6 +106,7 @@ export default function Map() {
               fontWeight: 700,
               letterSpacing: ".1rem",
               justifyContent: "center",
+              textAlign: "center",
             }}
           >
             ¡Bienvenid@ a Orienteering.me!
@@ -113,9 +114,10 @@ export default function Map() {
           <Typography
             variant="h6"
             sx={{
-              mb: 4,
+              mb: 6,
               display: "flex",
               fontWeight: 500,
+              justifyContent: "center",
               textAlign: "center",
             }}
           >
@@ -129,7 +131,7 @@ export default function Map() {
             variant="contained"
             href="/login"
             style={{
-              marginBottom: 10,
+              marginBottom: 8,
               marginLeft: "20%",
               color: "white",
               fontWeight: 700,
@@ -137,23 +139,37 @@ export default function Map() {
             }}
             color="primary"
           >
-            Inicia sesión
+            Iniciar sesión
           </Button>
         </Box>
       );
+    } else {
+      return (
+        <Box
+          sx={{
+            width: "100%",
+          }}
+        >
+          {Boolean(errorRetrievingData) ? (
+            <Alert
+              variant="filled"
+              severity="error"
+              style={{
+                marginTop: 95,
+                marginLeft: "2%",
+                position: "absolute",
+                zIndex: 999,
+                width: "96%",
+              }}
+            >
+              {errorRetrievingData}
+            </Alert>
+          ) : (
+            <></>
+          )}
+          <MainPageMap courses={courses} />
+        </Box>
+      );
     }
-
-    return (
-      <OpenStreetMap
-        courses={courses.map((course: CourseProps) => {
-          return {
-            name: course.name,
-            admin: course.admin.name,
-            lat: course.checkpoints[0].lat,
-            lng: course.checkpoints[0].lng,
-          };
-        })}
-      />
-    );
   }
 }

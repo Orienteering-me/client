@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Box, Button, Modal, Typography } from "@mui/material";
+import { Box, Breadcrumbs, Button, Typography } from "@mui/material";
 import axios from "axios";
 import FormDialog from "../components/FormDialog";
+import Link from "next/link";
 
 export default function Account() {
   const [token, setToken] = useState("");
@@ -127,6 +128,15 @@ export default function Account() {
         borderRadius: "25px",
       }}
     >
+      <Breadcrumbs aria-label="breadcrumb">
+        <Link color="inherit" href="/">
+          MUI
+        </Link>
+        <Link color="inherit" href="/material-ui/getting-started/installation/">
+          Core
+        </Link>
+        <Typography color="text.primary">Breadcrumbs</Typography>
+      </Breadcrumbs>
       <Typography
         variant="h4"
         noWrap

@@ -3,6 +3,7 @@ import {
   Alert,
   Box,
   Button,
+  Container,
   FormControl,
   IconButton,
   InputAdornment,
@@ -17,6 +18,8 @@ import PasswordStrengthBar from "react-password-strength-bar";
 import { useRouter } from "next/router";
 import axios from "axios";
 import bcrypt from "bcryptjs";
+import ErrorAlert from "../components/ErrorAlert";
+import LoadingBox from "../components/LoadingBox";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -27,6 +30,7 @@ export default function Register() {
   const [token, setToken] = useState("");
   const router = useRouter();
 
+  const [loaded, setLoaded] = useState(false);
   const [passwordScore, setPasswordScore] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
@@ -34,6 +38,7 @@ export default function Register() {
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [repeatedPasswordError, setRepeatedPasswordError] = useState(false);
+  const [errorRetrievingData, setErrorRetrievingData] = useState("");
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -68,35 +73,36 @@ export default function Register() {
 
     if (!emailError && !passwordError && !repeatedPasswordError) {
       try {
-        const hashedPassword = bcrypt.hashSync(password);
-
+        const hashedPassword = await bcrypt.hash(password, 10);
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URI}/users`,
           {
             email: email,
             name: name,
             phone_number: phone_number,
-            password: password,
+            password: hashedPassword,
           }
         );
 
         if (response.status == 201) {
           alert("Te has registrado correctamente.");
+          router.push("login");
         } else {
-          alert(
+          setErrorRetrievingData(
             "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
           );
         }
-        router.push("login");
       } catch (error) {
         if (error.response.status == 409) {
-          alert(
+          setErrorRetrievingData(
             "Ya existe una cuenta registrada con esta dirección de correo."
           );
+          console.log(error);
         } else {
-          alert(
+          setErrorRetrievingData(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
+          console.log(error);
         }
       }
     }
@@ -105,230 +111,286 @@ export default function Register() {
   useEffect(() => {
     const token = localStorage.getItem("jwt-token");
     setToken(token!);
+    setLoaded(true);
   }, []);
 
-  if (token) {
-    return (
-      <Box
-        sx={{
-          my: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: "90%",
-          borderRadius: "25px",
-        }}
-      >
-        <Typography
-          variant="h4"
-          noWrap
+  if (!loaded) {
+    return <LoadingBox />;
+  } else {
+    if (token) {
+      return (
+        <Container
+          maxWidth={false}
           sx={{
-            mt: 2,
-            mb: 2,
             display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
+            flexDirection: "column",
+            alignItems: "center",
           }}
+          disableGutters
         >
-          Ya tienes una sesión iniciada
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
+          <Box
+            sx={{
+              mt: 25,
+              mb: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "left",
+              padding: "2% 5%",
+              backgroundColor: "#ffffff",
+              width: { xs: "90%", md: "50%" },
+              borderRadius: "25px",
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              Ya tienes una sesión iniciada
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 500,
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              Para registrar una nueva cuenta, primero cierra la sesión actual.
+            </Typography>
+            <Button
+              variant="contained"
+              href="/logout"
+              style={{
+                marginTop: 50,
+                marginBottom: 5,
+                marginLeft: "20%",
+                color: "white",
+                fontWeight: 700,
+                width: "60%",
+              }}
+              color="primary"
+            >
+              Cerrar sesión
+            </Button>
+          </Box>
+        </Container>
+      );
+    } else {
+      return (
+        <Container
+          maxWidth={false}
           sx={{
-            mt: 2,
-            mb: 2,
             display: "flex",
-            fontWeight: 500,
+            flexDirection: "column",
+            alignItems: "center",
           }}
+          disableGutters
         >
-          Para registrar una nueva cuenta, primero cierra la sesión actual.
-        </Typography>
-        <Button
-          variant="contained"
-          href="/logout"
-          style={{
-            marginTop: 50,
-            marginBottom: 5,
-            marginLeft: "20%",
-            color: "white",
-            fontWeight: 700,
-            width: "60%",
-          }}
-          color="primary"
-        >
-          Cerrar sesión
-        </Button>
-      </Box>
-    );
+          <ErrorAlert error={errorRetrievingData} />
+          <Box
+            sx={{
+              mt: { xs: 12, md: 15 },
+              mb: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "left",
+              padding: "2% 5%",
+              backgroundColor: "#ffffff",
+              width: { xs: "90%", md: "50%" },
+              borderRadius: "25px",
+            }}
+          >
+            <form
+              onSubmit={handleSubmit}
+              action="login"
+              style={{ width: "100%" }}
+            >
+              <Typography
+                variant="h4"
+                sx={{
+                  mt: 2,
+                  mb: 2,
+                  display: "flex",
+                  fontWeight: 700,
+                  letterSpacing: ".1rem",
+                }}
+              >
+                Regístrate
+              </Typography>
+              <Typography
+                sx={{
+                  mb: 2,
+                  fontWeight: 500,
+                }}
+              >
+                ¿Ya tienes una cuenta?&nbsp;
+                <Link href="login">Inicia sesión aquí.</Link>
+              </Typography>
+              <TextField
+                required
+                fullWidth
+                id="email-input"
+                label="Correo electrónico"
+                placeholder="example@gmail.com"
+                variant="outlined"
+                margin="normal"
+                onChange={(e) => setEmail(e.target.value)}
+                error={emailError}
+              />
+              {emailError ? (
+                <Alert
+                  variant="filled"
+                  severity="error"
+                  style={{ marginBottom: 5 }}
+                >
+                  Formato incorrecto.
+                </Alert>
+              ) : (
+                <></>
+              )}
+              <TextField
+                required
+                fullWidth
+                id="name-input"
+                label="Nombre completo"
+                variant="outlined"
+                margin="normal"
+                onChange={(e) => setName(e.target.value)}
+              />
+              <TextField
+                fullWidth
+                id="phone-input"
+                label="Teléfono"
+                placeholder="+34 123456789"
+                variant="outlined"
+                margin="normal"
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <FormControl
+                required
+                variant="outlined"
+                margin="normal"
+                error={passwordError}
+                sx={{ width: "100%" }}
+              >
+                <InputLabel htmlFor="password-input">Contraseña</InputLabel>
+                <OutlinedInput
+                  id="password-input"
+                  label="Contraseña"
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Cambia la visibilidad de la contraseña"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+              <PasswordStrengthBar
+                password={password}
+                scoreWords={[
+                  "Muy débil",
+                  "Débil",
+                  "Fuerte",
+                  "Muy fuerte",
+                  "Ideal",
+                ]}
+                minLength={0}
+                onChangeScore={(score, feedback) => setPasswordScore(score)}
+              />
+              {passwordError ? (
+                <Alert
+                  variant="filled"
+                  severity="error"
+                  style={{ marginBottom: 5 }}
+                >
+                  La contraseña debe ser fuerte como mínimo y contener al menos
+                  una minúscula, una mayúscula y un número.
+                </Alert>
+              ) : (
+                <></>
+              )}
+              <FormControl
+                required
+                variant="outlined"
+                margin="normal"
+                error={repeatedPasswordError}
+                sx={{ width: "100%" }}
+              >
+                <InputLabel htmlFor="repeat-password-input">
+                  Repetir contraseña
+                </InputLabel>
+                <OutlinedInput
+                  id="repeat-password-input"
+                  label="Repetir contraseña"
+                  onChange={(e) => setRepeatedPassword(e.target.value)}
+                  type={showRepeatPassword ? "text" : "password"}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Cambia la visibilidad de la contraseña"
+                        onClick={handleClickShowRepeatPassword}
+                        onMouseDown={handleMouseDownRepeatPassword}
+                        edge="end"
+                      >
+                        {showRepeatPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+              {repeatedPasswordError ? (
+                <Alert
+                  variant="filled"
+                  severity="error"
+                  style={{ marginBottom: 5 }}
+                >
+                  Las contraseñas no coinciden.
+                </Alert>
+              ) : (
+                <></>
+              )}
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                style={{
+                  marginTop: 25,
+                  marginBottom: 10,
+                  color: "white",
+                  fontWeight: 700,
+                }}
+              >
+                Crear cuenta
+              </Button>
+            </form>
+          </Box>
+        </Container>
+      );
+    }
   }
-
-  return (
-    <form onSubmit={handleSubmit} action="login" style={{ width: "90%" }}>
-      <Box
-        sx={{
-          my: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: "100%",
-          borderRadius: "25px",
-        }}
-      >
-        <Typography
-          variant="h4"
-          noWrap
-          sx={{
-            mt: 2,
-            mb: 2,
-            display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
-          }}
-        >
-          Regístrate
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          ¿Ya tienes una cuenta?&nbsp;
-          <Link href="login">Inicia sesión aquí.</Link>
-        </Typography>
-        <TextField
-          required
-          fullWidth
-          id="email-input"
-          label="Correo electrónico"
-          placeholder="example@gmail.com"
-          variant="outlined"
-          margin="normal"
-          onChange={(e) => setEmail(e.target.value)}
-          error={emailError}
-        />
-        {emailError ? (
-          <Alert variant="filled" severity="error" style={{ marginBottom: 5 }}>
-            Formato incorrecto.
-          </Alert>
-        ) : (
-          <></>
-        )}
-        <TextField
-          required
-          fullWidth
-          id="name-input"
-          label="Nombre completo"
-          variant="outlined"
-          margin="normal"
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          id="phone-input"
-          label="Teléfono"
-          placeholder="+34 123456789"
-          variant="outlined"
-          margin="normal"
-          onChange={(e) => setPhoneNumber(e.target.value)}
-        />
-        <FormControl
-          required
-          variant="outlined"
-          margin="normal"
-          error={passwordError}
-        >
-          <InputLabel htmlFor="password-input">Contraseña</InputLabel>
-          <OutlinedInput
-            id="password-input"
-            label="Contraseña"
-            onChange={(e) => setPassword(e.target.value)}
-            type={showPassword ? "text" : "password"}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="Cambia la visibilidad de la contraseña"
-                  onClick={handleClickShowPassword}
-                  onMouseDown={handleMouseDownPassword}
-                  edge="end"
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-        <PasswordStrengthBar
-          password={password}
-          scoreWords={["Muy débil", "Débil", "Fuerte", "Muy fuerte", "Ideal"]}
-          minLength={0}
-          onChangeScore={(score, feedback) => setPasswordScore(score)}
-        />
-        {passwordError ? (
-          <Alert variant="filled" severity="error" style={{ marginBottom: 5 }}>
-            La contraseña debe ser fuerte como mínimo y contener al menos una
-            minúscula, una mayúscula y un número.
-          </Alert>
-        ) : (
-          <></>
-        )}
-        <FormControl
-          required
-          variant="outlined"
-          margin="normal"
-          error={repeatedPasswordError}
-        >
-          <InputLabel htmlFor="repeat-password-input">
-            Repetir contraseña
-          </InputLabel>
-          <OutlinedInput
-            id="repeat-password-input"
-            label="Repetir contraseña"
-            onChange={(e) => setRepeatedPassword(e.target.value)}
-            type={showRepeatPassword ? "text" : "password"}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="Cambia la visibilidad de la contraseña"
-                  onClick={handleClickShowRepeatPassword}
-                  onMouseDown={handleMouseDownRepeatPassword}
-                  edge="end"
-                >
-                  {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-        {repeatedPasswordError ? (
-          <Alert variant="filled" severity="error" style={{ marginBottom: 5 }}>
-            Las contraseñas no coinciden.
-          </Alert>
-        ) : (
-          <></>
-        )}
-        <Button
-          type="submit"
-          variant="contained"
-          style={{
-            marginTop: 25,
-            marginBottom: 10,
-            color: "white",
-            fontWeight: 700,
-          }}
-        >
-          Crear cuenta
-        </Button>
-      </Box>
-    </form>
-  );
 }

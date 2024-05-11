@@ -1,8 +1,9 @@
-import { Alert, Box, Button, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import axios from "axios";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import LoadingBox from "../components/LoadingBox";
+import ErrorAlert from "../components/ErrorAlert";
 
 const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
@@ -60,6 +61,10 @@ export default function Main() {
           );
           console.log(error);
         } else if (error.response.status == 404) {
+          setErrorRetrievingData(
+            "No tienes permisos para acceder a este recurso. Pruebe a volver a iniciar sesión."
+          );
+          console.log(error);
         } else {
           setErrorRetrievingData(
             "Ha ocurrido un error inesperado cargando las carreras disponibles."
@@ -72,7 +77,6 @@ export default function Main() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt-token");
-
     setToken(token!);
     setLoaded(true);
 
@@ -145,30 +149,18 @@ export default function Main() {
       );
     } else {
       return (
-        <Box
+        <Container
+          maxWidth={false}
           sx={{
-            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
+          disableGutters
         >
-          {Boolean(errorRetrievingData) ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{
-                marginTop: 95,
-                marginLeft: "2%",
-                position: "absolute",
-                zIndex: 999,
-                width: "96%",
-              }}
-            >
-              {errorRetrievingData}
-            </Alert>
-          ) : (
-            <></>
-          )}
+          <ErrorAlert error={errorRetrievingData} />
           <MainPageMap courses={courses} />
-        </Box>
+        </Container>
       );
     }
   }

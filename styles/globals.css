@@ -1,8 +1,7 @@
 @import "~leaflet/dist/leaflet.css";
 
 body {
-  background-image: url("../public/background.jpg");
-  background-attachment: fixed;
+  background-color: #ffdfc8;
 }
 
 .leaflet-container {

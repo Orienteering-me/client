@@ -17,11 +17,7 @@ export default function MyApp(props: AppProps) {
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Container
-          maxWidth={false}
-          disableGutters
-          sx={{ backgroundColor: "#FFDFC8", height: "100vh" }}
-        >
+        <Container maxWidth={false} disableGutters>
           <Box
             sx={{
               display: "flex",

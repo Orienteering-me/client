@@ -21,6 +21,7 @@ import bcrypt from "bcryptjs";
 import ErrorAlert from "../components/ErrorAlert";
 import LoadingBox from "../components/LoadingBox";
 import { TokenContext } from "./_app";
+import ForbiddenPage from "../components/ForbiddenPage";
 
 export default function Register() {
   const token = useContext(TokenContext);
@@ -131,73 +132,12 @@ export default function Register() {
   } else {
     if (token) {
       return (
-        <Container
-          maxWidth={false}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-          disableGutters
-        >
-          <Box
-            sx={{
-              mt: 25,
-              mb: 4,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "left",
-              padding: "2% 5%",
-              backgroundColor: "#ffffff",
-              width: { xs: "90%", md: "50%" },
-              borderRadius: "25px",
-            }}
-          >
-            <Typography
-              variant="h4"
-              sx={{
-                mt: 2,
-                mb: 2,
-                display: "flex",
-                fontWeight: 700,
-                letterSpacing: ".1rem",
-                justifyContent: "center",
-                textAlign: "center",
-              }}
-            >
-              Ya tienes una sesión iniciada
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                mt: 2,
-                mb: 2,
-                display: "flex",
-                fontWeight: 500,
-                justifyContent: "center",
-                textAlign: "center",
-              }}
-            >
-              Para registrar una nueva cuenta, primero cierra la sesión actual.
-            </Typography>
-            <Button
-              variant="contained"
-              href="/logout"
-              style={{
-                marginTop: 50,
-                marginBottom: 5,
-                marginLeft: "20%",
-                color: "white",
-                fontWeight: 700,
-                width: "60%",
-              }}
-              color="primary"
-            >
-              Cerrar sesión
-            </Button>
-          </Box>
-        </Container>
+        <ForbiddenPage
+          title="Ya tienes una sesión iniciada"
+          message="Para registrar una nueva cuenta, primero cierra la sesión actual"
+          button_href="/logout"
+          button_text="Cerrar sesión"
+        />
       );
     } else {
       return (

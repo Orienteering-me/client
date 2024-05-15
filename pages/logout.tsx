@@ -1,129 +1,99 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import { TokenContext } from "./_app";
+import LoadingBox from "../components/LoadingBox";
+import ForbiddenPage from "../components/ForbiddenPage";
 
 export default function Logout() {
   const token = useContext(TokenContext);
+
+  const [loaded, setLoaded] = useState(false);
   const [loggedOut, setLoggedOut] = useState(false);
 
   useEffect(() => {
     if (token) {
       localStorage.removeItem("orienteering-me-token");
       setLoggedOut(true);
+      setLoaded(true);
+    } else {
+      setLoaded(true);
     }
   }, [token]);
 
-  if (!loggedOut) {
-    return (
-      <Box
-        sx={{
-          my: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: "90%",
-          borderRadius: "25px",
-        }}
-      >
-        <Typography
-          variant="h4"
-          noWrap
+  if (!loaded) {
+    return <LoadingBox />;
+  } else {
+    if (!loggedOut) {
+      return (
+        <ForbiddenPage
+          title="No has iniciado sesión"
+          message="No puedes cerrar sesión sin iniciar sesión previamente"
+          button_href="/login"
+          button_text="Iniciar sesión"
+        />
+      );
+    } else {
+      return (
+        <Box
           sx={{
-            mt: 2,
-            mb: 2,
+            mt: 25,
+            mb: 4,
             display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "50%" },
+            borderRadius: "25px",
           }}
         >
-          No has iniciado sesión
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            mt: 2,
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          Inicia sesión para poder ver esta página.
-        </Typography>
-        <Button
-          variant="contained"
-          href="/login"
-          style={{
-            marginTop: 50,
-            marginBottom: 5,
-            marginLeft: "20%",
-            color: "white",
-            fontWeight: 700,
-            width: "60%",
-          }}
-          color="primary"
-        >
-          Iniciar sesión
-        </Button>
-      </Box>
-    );
+          <Typography
+            variant="h4"
+            sx={{
+              mt: 2,
+              mb: 2,
+              display: "flex",
+              fontWeight: 700,
+              letterSpacing: ".1rem",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            Sesión cerrada
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 2,
+              mb: 2,
+              display: "flex",
+              fontWeight: 500,
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            Se ha cerrado la sesión correctamente
+          </Typography>
+          <Button
+            variant="contained"
+            href="."
+            style={{
+              marginTop: 50,
+              marginBottom: 5,
+              marginLeft: "15%",
+              color: "white",
+              fontWeight: 700,
+              width: "70%",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+            color="primary"
+          >
+            Volver al inicio
+          </Button>
+        </Box>
+      );
+    }
   }
-
-  return (
-    <Box
-      sx={{
-        my: 4,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "left",
-        padding: "2% 5%",
-        backgroundColor: "#ffffff",
-        width: "90%",
-        borderRadius: "25px",
-      }}
-    >
-      <Typography
-        variant="h4"
-        noWrap
-        sx={{
-          mt: 2,
-          mb: 2,
-          display: "flex",
-          fontWeight: 700,
-          letterSpacing: ".1rem",
-        }}
-      >
-        Sesión cerrada
-      </Typography>
-      <Typography
-        variant="h6"
-        noWrap
-        sx={{
-          mt: 2,
-          mb: 2,
-          display: "flex",
-          fontWeight: 500,
-        }}
-      >
-        Se ha cerrado la sesión correctamente.
-      </Typography>
-      <Button
-        variant="contained"
-        href="."
-        style={{
-          marginTop: 15,
-          marginBottom: 5,
-          fontWeight: 700,
-          color: "white",
-        }}
-        color="primary"
-      >
-        Volver a la página principal
-      </Button>
-    </Box>
-  );
 }

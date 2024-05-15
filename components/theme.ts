@@ -23,6 +23,7 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: montserrat.style.fontFamily,
+    fontSize: 16,
   },
 });
 

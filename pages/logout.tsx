@@ -1,23 +1,17 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
+import { TokenContext } from "./_app";
 
 export default function Logout() {
-  const [token, setToken] = useState("");
+  const token = useContext(TokenContext);
   const [loggedOut, setLoggedOut] = useState(false);
 
   useEffect(() => {
-    logout();
-  }, []);
-
-  function logout() {
-    const token = localStorage.getItem("jwt-token");
-
     if (token) {
-      setToken("");
-      localStorage.removeItem("jwt-token");
+      localStorage.removeItem("orienteering-me-token");
       setLoggedOut(true);
     }
-  }
+  }, [token]);
 
   if (!loggedOut) {
     return (

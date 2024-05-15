@@ -13,12 +13,12 @@ export default function NewCourse() {
   const [token, setToken] = useState("");
 
   async function getData() {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     setToken(token!);
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     setToken(token!);
 
     if (token) {

@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent, useContext, useEffect, useState } from "react";
 import {
   AppBar,
   Avatar,
@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import { TokenContext } from "../pages/_app";
 
 const pages = [{ text: "Información", href: "info" }];
 
@@ -30,15 +31,10 @@ const authenticatedMenuItems = [
 ];
 
 function ResponsiveAppBar() {
-  const [authenticated, setAuthenticated] = useState(false);
+  const token = useContext(TokenContext);
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
-    setAuthenticated(token != null);
-  }, []);
 
   const handleOpenNavMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -212,7 +208,7 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {authenticated
+              {Boolean(token)
                 ? authenticatedMenuItems.map((item) => (
                     <MenuItem
                       key={item.text}

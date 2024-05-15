@@ -19,6 +19,7 @@
     "@mui/material-nextjs": "latest",
     "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
+    "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "next": "latest",
@@ -26,7 +27,8 @@
     "react-dom": "latest",
     "react-leaflet": "^4.2.1",
     "react-password-strength-bar": "^0.4.1",
-    "react-qr-code": "^2.0.12"
+    "react-qr-code": "^2.0.12",
+    "universal-cookie": "^7.1.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

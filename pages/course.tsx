@@ -25,14 +25,14 @@ export default function Course({ name }) {
   });
 
   async function getData() {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
 
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
-            "jwt-token": token,
+            "orienteering-me-token": token,
           },
         }
       );
@@ -62,7 +62,7 @@ export default function Course({ name }) {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     setToken(token!);
 
     if (token) {

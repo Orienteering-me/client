@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
   Button,
+  Container,
   FormControl,
   IconButton,
   InputAdornment,
@@ -14,14 +15,21 @@ import {
 import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
+import LoadingBox from "../components/LoadingBox";
+import ErrorAlert from "../components/ErrorAlert";
+import { TokenContext } from "./_app";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
+  const token = useContext(TokenContext);
   const router = useRouter();
 
+  const [loaded, setLoaded] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [errorRetrievingData, setErrorRetrievingData] = useState("");
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -43,178 +51,214 @@ export default function Login() {
         }
       );
 
-      console.log(response.data);
       if (response.status == 200) {
-        localStorage.setItem("jwt-token", response.data.token);
+        localStorage.setItem("orienteering-me-token", response.data.token);
         setEmail("");
         setPassword("");
         router.push(".");
       } else {
-        alert(
+        setErrorRetrievingData(
           "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
         );
       }
     } catch (error) {
       if (error.response.status == 401) {
-        alert("La contraseña introducida es incorrecta.");
-      }
-      if (error.response.status == 404) {
-        alert("La cuenta introducida no existe.");
+        setErrorRetrievingData("La contraseña introducida es incorrecta.");
+        console.log(error);
+      } else if (error.response.status == 404) {
+        setErrorRetrievingData("La cuenta introducida no existe.");
+        console.log(error);
       } else {
-        alert(
+        setErrorRetrievingData(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
+        console.log(error);
       }
     }
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
-    setToken(token!);
-  }, []);
+    setLoaded(true);
+  }, [token]);
 
-  if (token) {
-    return (
-      <Box
-        sx={{
-          my: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: "90%",
-          borderRadius: "25px",
-        }}
-      >
-        <Typography
-          variant="h4"
-          noWrap
+  if (!loaded) {
+    return <LoadingBox />;
+  } else {
+    if (token) {
+      return (
+        <Container
+          maxWidth={false}
           sx={{
-            mt: 2,
-            mb: 2,
             display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
+            flexDirection: "column",
+            alignItems: "center",
           }}
+          disableGutters
         >
-          Ya tiene una sesión iniciada
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
+          <Box
+            sx={{
+              mt: 25,
+              mb: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "left",
+              padding: "2% 5%",
+              backgroundColor: "#ffffff",
+              width: { xs: "90%", md: "50%" },
+              borderRadius: "25px",
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              Ya tienes una sesión iniciada
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 500,
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              Para iniciar sesión con otra cuenta, primero cierra la sesión
+              actual.
+            </Typography>
+            <Button
+              variant="contained"
+              href="/logout"
+              style={{
+                marginTop: 50,
+                marginBottom: 5,
+                marginLeft: "20%",
+                color: "white",
+                fontWeight: 700,
+                width: "60%",
+              }}
+              color="primary"
+            >
+              Cerrar sesión
+            </Button>
+          </Box>
+        </Container>
+      );
+    } else {
+      return (
+        <Container
+          maxWidth={false}
           sx={{
-            mt: 2,
-            mb: 2,
             display: "flex",
-            fontWeight: 500,
+            flexDirection: "column",
+            alignItems: "center",
           }}
+          disableGutters
         >
-          Para iniciar sesión con otra cuenta, primero cierra la sesión actual.
-        </Typography>
-        <Button
-          variant="contained"
-          href="/logout"
-          style={{
-            marginTop: 50,
-            marginBottom: 5,
-            marginLeft: "20%",
-            color: "white",
-            fontWeight: 700,
-            width: "60%",
-          }}
-          color="primary"
-        >
-          Cerrar sesión
-        </Button>
-      </Box>
-    );
+          <ErrorAlert error={errorRetrievingData} />
+          <Box
+            sx={{
+              mt: 20,
+              mb: 4,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "left",
+              padding: "2% 5%",
+              backgroundColor: "#ffffff",
+              width: { xs: "90%", md: "50%" },
+              borderRadius: "25px",
+            }}
+          >
+            <form onSubmit={login} action="login" style={{ width: "100%" }}>
+              <Typography
+                variant="h4"
+                noWrap
+                sx={{
+                  mt: 2,
+                  mb: 2,
+                  display: "flex",
+                  fontWeight: 700,
+                  letterSpacing: ".1rem",
+                }}
+              >
+                Inicia sesión
+              </Typography>
+              <Typography
+                noWrap
+                sx={{
+                  mb: 2,
+                  display: "flex",
+                  fontWeight: 500,
+                }}
+              >
+                ¿Aún no tienes una cuenta?&nbsp;
+                <Link href="register">Regístrate aquí.</Link>
+              </Typography>
+              <TextField
+                required
+                fullWidth
+                id="email-input"
+                label="Correo electrónico"
+                placeholder="example@gmail.com"
+                variant="outlined"
+                margin="normal"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <FormControl
+                required
+                variant="outlined"
+                margin="normal"
+                sx={{ width: "100%" }}
+              >
+                <InputLabel htmlFor="password-input">Contraseña</InputLabel>
+                <OutlinedInput
+                  id="password-input"
+                  label="Contraseña"
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? "text" : "password"}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="Cambia la visibilidad de la contraseña"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                />
+              </FormControl>
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                style={{
+                  marginTop: 25,
+                  marginBottom: 10,
+                  color: "white",
+                  fontWeight: 700,
+                }}
+              >
+                Iniciar sesión
+              </Button>
+            </form>
+          </Box>
+        </Container>
+      );
+    }
   }
-
-  return (
-    <form onSubmit={login} action="login" style={{ width: "90%" }}>
-      <Box
-        sx={{
-          my: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: "100%",
-          borderRadius: "25px",
-        }}
-      >
-        <Typography
-          variant="h4"
-          noWrap
-          sx={{
-            mt: 2,
-            mb: 2,
-            display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
-          }}
-        >
-          Inicia sesión
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          ¿Aún no tienes una cuenta?&nbsp;
-          <Link href="register">Regístrate aquí.</Link>
-        </Typography>
-        <TextField
-          required
-          fullWidth
-          id="email-input"
-          label="Correo electrónico"
-          placeholder="example@gmail.com"
-          variant="outlined"
-          margin="normal"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <FormControl required variant="outlined" margin="normal">
-          <InputLabel htmlFor="password-input">Contraseña</InputLabel>
-          <OutlinedInput
-            id="password-input"
-            label="Contraseña"
-            onChange={(e) => setPassword(e.target.value)}
-            type={showPassword ? "text" : "password"}
-            endAdornment={
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="Cambia la visibilidad de la contraseña"
-                  onClick={handleClickShowPassword}
-                  onMouseDown={handleMouseDownPassword}
-                  edge="end"
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-        <Button
-          type="submit"
-          variant="contained"
-          style={{
-            marginTop: 25,
-            marginBottom: 10,
-            color: "white",
-            fontWeight: 700,
-          }}
-        >
-          Iniciar sesión
-        </Button>
-      </Box>
-    </form>
-  );
 }

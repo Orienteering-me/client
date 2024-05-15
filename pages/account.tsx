@@ -13,7 +13,7 @@ export default function Account() {
   });
 
   async function getData() {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     setToken(token!);
 
     try {
@@ -21,7 +21,7 @@ export default function Account() {
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "jwt-token": token,
+            "orienteering-me-token": token,
           },
         }
       );
@@ -47,7 +47,7 @@ export default function Account() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     setToken(token!);
 
     if (token) {

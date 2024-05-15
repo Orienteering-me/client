@@ -3,12 +3,29 @@ import { AppProps } from "next/app";
 import { AppCacheProvider } from "@mui/material-nextjs/v14-pagesRouter";
 import { Box, Container, CssBaseline, ThemeProvider } from "@mui/material";
 import "../styles/globals.css";
-
 import theme from "../components/theme";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
+import { createContext, useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
+export const TokenContext = createContext("");
 
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
+
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("orienteering-me-token");
+    if (token) {
+      if (jwtDecode(token).exp! * 1000 < new Date().getTime()) {
+        localStorage.removeItem("orienteering-me-token");
+        setToken("");
+      } else {
+        setToken(token);
+      }
+    }
+  }, []);
 
   return (
     <AppCacheProvider {...props}>
@@ -26,8 +43,10 @@ export default function MyApp(props: AppProps) {
               alignItems: "center",
             }}
           >
-            <ResponsiveAppBar></ResponsiveAppBar>
-            <Component {...pageProps} />
+            <TokenContext.Provider value={token}>
+              <ResponsiveAppBar></ResponsiveAppBar>
+              <Component {...pageProps} />
+            </TokenContext.Provider>
           </Box>
         </Container>
       </ThemeProvider>

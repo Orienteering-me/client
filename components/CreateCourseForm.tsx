@@ -43,7 +43,7 @@ function CreateCourseForm() {
     event.preventDefault();
     setNameHasSpecialCharacters(!name.match(`^[a-zA-Z0-9]+$`));
     setValidNumberOfCheckpoints(checkpoints.length >= 2);
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
 
     if (!nameHasSpecialCharacters && validNumberOfCheckpoints) {
       try {
@@ -55,7 +55,7 @@ function CreateCourseForm() {
           },
           {
             headers: {
-              "jwt-token": token,
+              "orienteering-me-token": token,
             },
           }
         );

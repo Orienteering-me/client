@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -20,14 +20,16 @@ import axios from "axios";
 import bcrypt from "bcryptjs";
 import ErrorAlert from "../components/ErrorAlert";
 import LoadingBox from "../components/LoadingBox";
+import { TokenContext } from "./_app";
 
 export default function Register() {
+  const token = useContext(TokenContext);
+
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone_number, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [repeatedPassword, setRepeatedPassword] = useState("");
-  const [token, setToken] = useState("");
   const router = useRouter();
 
   const [loaded, setLoaded] = useState(false);
@@ -35,8 +37,9 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
+  const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
+  const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
+  const [wrongPasswordFormat, setWrongPasswordFormat] = useState(false);
   const [repeatedPasswordError, setRepeatedPasswordError] = useState(false);
   const [errorRetrievingData, setErrorRetrievingData] = useState("");
 
@@ -57,21 +60,27 @@ export default function Register() {
     event.preventDefault();
   };
 
-  async function handleSubmit(this: any, event: any) {
+  async function registerAccount(this: any, event: any) {
     event.preventDefault();
-    setEmailError(
-      !email.match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      )
+    const wrongEmailFormat = !email.match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
-    setPasswordError(
-      !password.match(
-        /^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9!@#$%^&*]{8,}$/
-      ) || passwordScore < 2
-    );
-    setRepeatedPasswordError(password != repeatedPassword);
+    setWrongEmailFormat(wrongEmailFormat);
+    const wrongPhoneFormat = !phone_number
+      .replace(/[\s()+\-\.]|ext/gi, "")
+      .match(/^\d{5,}$/);
+    setWrongPhoneFormat(wrongPhoneFormat);
+    const wrongPasswordFormat = passwordScore < 2;
+    setWrongPasswordFormat(wrongPasswordFormat);
+    const repeatedPasswordError = password != repeatedPassword;
+    setRepeatedPasswordError(repeatedPasswordError);
 
-    if (!emailError && !passwordError && !repeatedPasswordError) {
+    if (
+      !wrongEmailFormat &&
+      !wrongPhoneFormat &&
+      !wrongPasswordFormat &&
+      !repeatedPasswordError
+    ) {
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const response = await axios.post(
@@ -86,6 +95,11 @@ export default function Register() {
 
         if (response.status == 201) {
           alert("Te has registrado correctamente.");
+          setEmail("");
+          setName("");
+          setPhoneNumber("");
+          setPassword("");
+          setRepeatedPassword("");
           router.push("login");
         } else {
           setErrorRetrievingData(
@@ -109,10 +123,8 @@ export default function Register() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
-    setToken(token!);
     setLoaded(true);
-  }, []);
+  }, [token]);
 
   if (!loaded) {
     return <LoadingBox />;
@@ -214,7 +226,7 @@ export default function Register() {
             }}
           >
             <form
-              onSubmit={handleSubmit}
+              onSubmit={registerAccount}
               action="login"
               style={{ width: "100%" }}
             >
@@ -248,9 +260,9 @@ export default function Register() {
                 variant="outlined"
                 margin="normal"
                 onChange={(e) => setEmail(e.target.value)}
-                error={emailError}
+                error={wrongEmailFormat}
               />
-              {emailError ? (
+              {wrongEmailFormat ? (
                 <Alert
                   variant="filled"
                   severity="error"
@@ -279,11 +291,22 @@ export default function Register() {
                 margin="normal"
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
+              {wrongPhoneFormat ? (
+                <Alert
+                  variant="filled"
+                  severity="error"
+                  style={{ marginBottom: 5 }}
+                >
+                  Formato incorrecto.
+                </Alert>
+              ) : (
+                <></>
+              )}
               <FormControl
                 required
                 variant="outlined"
                 margin="normal"
-                error={passwordError}
+                error={wrongPasswordFormat}
                 sx={{ width: "100%" }}
               >
                 <InputLabel htmlFor="password-input">Contraseña</InputLabel>
@@ -318,14 +341,13 @@ export default function Register() {
                 minLength={0}
                 onChangeScore={(score, feedback) => setPasswordScore(score)}
               />
-              {passwordError ? (
+              {wrongPasswordFormat ? (
                 <Alert
                   variant="filled"
                   severity="error"
                   style={{ marginBottom: 5 }}
                 >
-                  La contraseña debe ser fuerte como mínimo y contener al menos
-                  una minúscula, una mayúscula y un número.
+                  La contraseña debe tener una puntuación de fuerte como mínimo.
                 </Alert>
               ) : (
                 <></>

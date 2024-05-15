@@ -1,9 +1,10 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import axios from "axios";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import LoadingBox from "../components/LoadingBox";
 import ErrorAlert from "../components/ErrorAlert";
+import { TokenContext } from "./_app";
 
 const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
@@ -18,7 +19,8 @@ interface CourseProps {
 }
 
 export default function Main() {
-  const [token, setToken] = useState("");
+  const token = useContext(TokenContext);
+
   const [courses, setCourses] = useState([]);
 
   const [loaded, setLoaded] = useState(false);
@@ -26,15 +28,13 @@ export default function Main() {
   const [errorRetrievingData, setErrorRetrievingData] = useState("");
 
   async function getData() {
-    const token = localStorage.getItem("jwt-token");
-
     if (token) {
       try {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URI}/courses`,
           {
             headers: {
-              "jwt-token": token,
+              "orienteering-me-token": token,
             },
           }
         );
@@ -54,17 +54,13 @@ export default function Main() {
             "Ha ocurrido un error inesperado cargando las carreras disponibles."
           );
         }
-      } catch (error: unknown) {
+      } catch (error) {
         if (error.response.status == 401) {
           setErrorRetrievingData(
             "No tienes permisos para acceder a este recurso. Pruebe a volver a iniciar sesión."
           );
           console.log(error);
         } else if (error.response.status == 404) {
-          setErrorRetrievingData(
-            "No tienes permisos para acceder a este recurso. Pruebe a volver a iniciar sesión."
-          );
-          console.log(error);
         } else {
           setErrorRetrievingData(
             "Ha ocurrido un error inesperado cargando las carreras disponibles."
@@ -76,12 +72,9 @@ export default function Main() {
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt-token");
-    setToken(token!);
     setLoaded(true);
-
     getData();
-  }, []);
+  }, [token]);
 
   if (!loaded) {
     return <LoadingBox />;

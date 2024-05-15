@@ -21,7 +21,7 @@ export default function AlertDialog() {
   };
 
   const deleteUser = async () => {
-    const token = localStorage.getItem("jwt-token");
+    const token = localStorage.getItem("orienteering-me-token");
     handleClose();
 
     try {
@@ -29,7 +29,7 @@ export default function AlertDialog() {
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "jwt-token": token,
+            "orienteering-me-token": token,
           },
         }
       );
@@ -37,7 +37,7 @@ export default function AlertDialog() {
       if (response.status == 200) {
         alert("La cuenta ha sido eliminada correctamente.");
         setToken("");
-        localStorage.removeItem("jwt-token");
+        localStorage.removeItem("orienteering-me-token");
         router.push(".");
       } else {
         alert(

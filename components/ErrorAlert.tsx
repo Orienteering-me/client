@@ -1,24 +1,36 @@
-import { Alert } from "@mui/material";
+import { Alert, IconButton, Snackbar, Typography } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
-interface ErrorProps {
+interface ErrorAlertProps {
+  open: boolean;
   error: string;
+  onClose: () => void;
 }
 
-function ErrorAlert({ error }: ErrorProps) {
-  return Boolean(error) ? (
-    <Alert
-      variant="filled"
-      severity="error"
-      style={{
-        marginTop: 95,
-        position: "absolute",
-        zIndex: 999,
-      }}
+function ErrorAlert({ open, error, onClose }: ErrorAlertProps) {
+  return (
+    <Snackbar
+      open={open}
+      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      onClose={onClose}
     >
-      {error}
-    </Alert>
-  ) : (
-    <></>
+      <Alert
+        variant="filled"
+        severity="error"
+        action={
+          <IconButton
+            aria-label="close"
+            color="inherit"
+            size="small"
+            onClick={onClose}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        }
+      >
+        <Typography>{error}</Typography>
+      </Alert>
+    </Snackbar>
   );
 }
 

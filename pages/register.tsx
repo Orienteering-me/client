@@ -25,13 +25,13 @@ import ForbiddenPage from "../components/ForbiddenPage";
 
 export default function Register() {
   const token = useContext(TokenContext);
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [phone_number, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [repeatedPassword, setRepeatedPassword] = useState("");
-  const router = useRouter();
 
   const [loaded, setLoaded] = useState(false);
   const [passwordScore, setPasswordScore] = useState(0);
@@ -67,9 +67,9 @@ export default function Register() {
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
     setWrongEmailFormat(wrongEmailFormat);
-    const wrongPhoneFormat = !phone_number
-      .replace(/[\s()+\-\.]|ext/gi, "")
-      .match(/^\d{5,}$/);
+    const wrongPhoneFormat =
+      !phone_number.replace(/[\s()+\-\.]|ext/gi, "").match(/^\d{5,}$/) &&
+      phone_number.length != 0;
     setWrongPhoneFormat(wrongPhoneFormat);
     const wrongPasswordFormat = passwordScore < 2;
     setWrongPasswordFormat(wrongPasswordFormat);
@@ -101,7 +101,7 @@ export default function Register() {
           setPhoneNumber("");
           setPassword("");
           setRepeatedPassword("");
-          router.push("login");
+          router.push("/login");
         } else {
           setErrorRetrievingData(
             "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
@@ -150,7 +150,11 @@ export default function Register() {
           }}
           disableGutters
         >
-          <ErrorAlert error={errorRetrievingData} />
+          <ErrorAlert
+            open={Boolean(errorRetrievingData)}
+            error={errorRetrievingData}
+            onClose={() => setErrorRetrievingData("")}
+          />
           <Box
             sx={{
               mt: { xs: 12, md: 15 },

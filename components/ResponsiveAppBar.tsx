@@ -1,4 +1,4 @@
-import { MouseEvent, useContext, useEffect, useState } from "react";
+import { MouseEvent, useContext, useState } from "react";
 import {
   AppBar,
   Avatar,
@@ -18,16 +18,16 @@ import { TokenContext } from "../pages/_app";
 const pages = [{ text: "Información", href: "info" }];
 
 const menuItems = [
-  { text: "Iniciar sesión", href: "login" },
-  { text: "Registrarme", href: "register" },
+  { text: "Iniciar sesión", href: "/login" },
+  { text: "Registrarme", href: "/register" },
 ];
 
 const authenticatedMenuItems = [
-  { text: "Mi cuenta", href: "account" },
-  { text: "Carreras favoritas", href: "saved_courses" },
-  { text: "Crear carrera", href: "new_course" },
-  { text: "Carreras creadas", href: "created_courses" },
-  { text: "Cerrar sesión", href: "logout" },
+  { text: "Mi cuenta", href: "/account" },
+  { text: "Carreras favoritas", href: "/saved_courses" },
+  { text: "Crear carrera", href: "/new_course" },
+  { text: "Carreras creadas", href: "/created_courses" },
+  { text: "Cerrar sesión", href: "/logout" },
 ];
 
 function ResponsiveAppBar() {
@@ -56,7 +56,7 @@ function ResponsiveAppBar() {
         <Toolbar disableGutters>
           <Box
             component="a"
-            href="."
+            href="/"
             sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}
           >
             <Box
@@ -66,14 +66,14 @@ function ResponsiveAppBar() {
                 pb: 1,
               }}
               alt="Orienteering.me"
-              src={"logo-icon.svg"}
+              src={"/logo-icon.svg"}
             />
           </Box>
           <Typography
             variant="h4"
             noWrap
             component="a"
-            href="."
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "none", md: "flex" },
@@ -138,7 +138,7 @@ function ResponsiveAppBar() {
           </Box>
           <Box
             component="a"
-            href="."
+            href="/"
             sx={{ display: { xs: "flex", md: "none" } }}
           >
             <Box
@@ -148,13 +148,13 @@ function ResponsiveAppBar() {
                 pb: 0.5,
               }}
               alt="Orienteering.me"
-              src={"logo-icon.svg"}
+              src={"/logo-icon.svg"}
             />
           </Box>
           <Typography
             noWrap
             component="a"
-            href="."
+            href="/"
             sx={{
               mr: 2,
               display: { xs: "flex", md: "none" },
@@ -190,7 +190,7 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Abrir menú">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 1 }}>
-                <Avatar alt="Avatar" src="default_avatar.png" />
+                <Avatar alt="Avatar" src="/default_avatar.png" />
               </IconButton>
             </Tooltip>
             <Menu

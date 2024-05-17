@@ -29,7 +29,7 @@ export default function DeleteCourseFormDialog() {
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "orienteering-me-token": token,
+            "auth-token": token,
           },
         }
       );

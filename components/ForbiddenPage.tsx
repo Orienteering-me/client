@@ -64,7 +64,7 @@ function ForbiddenPage({ title, message, button_text, button_href }: Props) {
           href={button_href}
           style={{
             marginTop: 50,
-            marginBottom: 5,
+            marginBottom: "1rem",
             marginLeft: "20%",
             color: "white",
             fontWeight: 700,

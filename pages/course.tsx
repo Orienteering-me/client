@@ -32,7 +32,7 @@ export default function Course({ name }) {
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
-            "orienteering-me-token": token,
+            "auth-token": token,
           },
         }
       );

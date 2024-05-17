@@ -56,7 +56,7 @@ export default function Login() {
         localStorage.setItem("orienteering-me-token", response.data.token);
         setEmail("");
         setPassword("");
-        router.push(".");
+        router.push("/");
       } else {
         setErrorRetrievingData(
           "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
@@ -105,7 +105,11 @@ export default function Login() {
           }}
           disableGutters
         >
-          <ErrorAlert error={errorRetrievingData} />
+          <ErrorAlert
+            open={Boolean(errorRetrievingData)}
+            error={errorRetrievingData}
+            onClose={() => setErrorRetrievingData("")}
+          />
           <Box
             sx={{
               mt: 20,
@@ -135,10 +139,8 @@ export default function Login() {
                 Inicia sesión
               </Typography>
               <Typography
-                noWrap
                 sx={{
                   mb: 2,
-                  display: "flex",
                   fontWeight: 500,
                 }}
               >

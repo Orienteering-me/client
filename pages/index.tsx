@@ -34,7 +34,7 @@ export default function Main() {
           `${process.env.NEXT_PUBLIC_API_URI}/courses`,
           {
             headers: {
-              "orienteering-me-token": token,
+              "auth-token": token,
             },
           }
         );
@@ -72,8 +72,10 @@ export default function Main() {
   }
 
   useEffect(() => {
+    if (token) {
+      getData();
+    }
     setLoaded(true);
-    getData();
   }, [token]);
 
   if (!loaded) {
@@ -84,6 +86,7 @@ export default function Main() {
         <Box
           sx={{
             mt: { xs: 15, md: 20 },
+            mb: 4,
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -99,7 +102,21 @@ export default function Main() {
             sx={{
               mt: 6,
               mb: 8,
-              display: "flex",
+              display: { xs: "none", md: "flex" },
+              fontWeight: 700,
+              letterSpacing: ".1rem",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            ¡Bienvenid@ a Orienteering.me!
+          </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              mt: 6,
+              mb: 6,
+              display: { xs: "flex", md: "none" },
               fontWeight: 700,
               letterSpacing: ".1rem",
               justifyContent: "center",
@@ -128,11 +145,13 @@ export default function Main() {
             variant="contained"
             href="/login"
             style={{
-              marginBottom: 8,
+              marginBottom: "1rem",
               marginLeft: "20%",
               color: "white",
               fontWeight: 700,
               width: "60%",
+              justifyContent: "center",
+              textAlign: "center",
             }}
             color="primary"
           >
@@ -151,7 +170,11 @@ export default function Main() {
           }}
           disableGutters
         >
-          <ErrorAlert error={errorRetrievingData} />
+          <ErrorAlert
+            open={Boolean(errorRetrievingData)}
+            error={errorRetrievingData}
+            onClose={() => setErrorRetrievingData("")}
+          />
           <MainPageMap courses={courses} />
         </Container>
       );

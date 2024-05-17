@@ -27,10 +27,12 @@ export default function Register() {
   const token = useContext(TokenContext);
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [phone_number, setPhoneNumber] = useState("");
-  const [password, setPassword] = useState("");
+  const [userData, setUserData] = useState({
+    email: "",
+    name: "",
+    phone_number: "",
+    password: "",
+  });
   const [repeatedPassword, setRepeatedPassword] = useState("");
 
   const [loaded, setLoaded] = useState(false);
@@ -63,17 +65,18 @@ export default function Register() {
 
   async function registerAccount(this: any, event: any) {
     event.preventDefault();
-    const wrongEmailFormat = !email.match(
+    const wrongEmailFormat = !userData.email.match(
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
     setWrongEmailFormat(wrongEmailFormat);
     const wrongPhoneFormat =
-      !phone_number.replace(/[\s()+\-\.]|ext/gi, "").match(/^\d{5,}$/) &&
-      phone_number.length != 0;
+      !userData.phone_number
+        .replace(/[\s()+\-\.]|ext/gi, "")
+        .match(/^\d{5,}$/) && userData.phone_number.length != 0;
     setWrongPhoneFormat(wrongPhoneFormat);
     const wrongPasswordFormat = passwordScore < 2;
     setWrongPasswordFormat(wrongPasswordFormat);
-    const repeatedPasswordError = password != repeatedPassword;
+    const repeatedPasswordError = userData.password != repeatedPassword;
     setRepeatedPasswordError(repeatedPasswordError);
 
     if (
@@ -83,24 +86,19 @@ export default function Register() {
       !repeatedPasswordError
     ) {
       try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URI}/users`,
           {
-            email: email,
-            name: name,
-            phone_number: phone_number,
+            email: userData.email,
+            name: userData.name,
+            phone_number: userData.phone_number,
             password: hashedPassword,
           }
         );
 
         if (response.status == 201) {
           alert("Te has registrado correctamente.");
-          setEmail("");
-          setName("");
-          setPhoneNumber("");
-          setPassword("");
-          setRepeatedPassword("");
           router.push("/login");
         } else {
           setErrorRetrievingData(
@@ -203,7 +201,14 @@ export default function Register() {
                 placeholder="example@gmail.com"
                 variant="outlined"
                 margin="normal"
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setUserData({
+                    email: e.target.value,
+                    name: userData.name,
+                    phone_number: userData.phone_number,
+                    password: userData.password,
+                  })
+                }
                 error={wrongEmailFormat}
               />
               {wrongEmailFormat ? (
@@ -224,7 +229,14 @@ export default function Register() {
                 label="Nombre completo"
                 variant="outlined"
                 margin="normal"
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) =>
+                  setUserData({
+                    email: userData.email,
+                    name: e.target.value,
+                    phone_number: userData.phone_number,
+                    password: userData.password,
+                  })
+                }
               />
               <TextField
                 fullWidth
@@ -233,7 +245,14 @@ export default function Register() {
                 placeholder="+34 123456789"
                 variant="outlined"
                 margin="normal"
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                onChange={(e) =>
+                  setUserData({
+                    email: userData.email,
+                    name: userData.name,
+                    phone_number: e.target.value,
+                    password: userData.password,
+                  })
+                }
               />
               {wrongPhoneFormat ? (
                 <Alert
@@ -257,7 +276,14 @@ export default function Register() {
                 <OutlinedInput
                   id="password-input"
                   label="Contraseña"
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) =>
+                    setUserData({
+                      email: userData.email,
+                      name: userData.name,
+                      phone_number: userData.phone_number,
+                      password: e.target.value,
+                    })
+                  }
                   type={showPassword ? "text" : "password"}
                   endAdornment={
                     <InputAdornment position="end">
@@ -274,7 +300,7 @@ export default function Register() {
                 />
               </FormControl>
               <PasswordStrengthBar
-                password={password}
+                password={userData.password}
                 scoreWords={[
                   "Muy débil",
                   "Débil",

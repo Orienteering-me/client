@@ -54,8 +54,6 @@ export default function Login() {
 
       if (response.status == 200) {
         localStorage.setItem("orienteering-me-token", response.data.token);
-        setEmail("");
-        setPassword("");
         router.push("/");
       } else {
         setErrorRetrievingData(

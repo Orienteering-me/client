@@ -9,24 +9,24 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
-import FormDialog from "../../components/FormDialog";
 import Link from "next/link";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
 import { TokenContext } from "../_app";
 import { useRouter } from "next/router";
+import ErrorAlert from "../../components/ErrorAlert";
 
 export default function Account() {
   const token = useContext(TokenContext);
   const router = useRouter();
 
-  const [loaded, setLoaded] = useState(false);
   const [userData, setUserData] = useState({
     email: "",
     name: "",
     phone_number: "",
   });
 
+  const [loaded, setLoaded] = useState(false);
   const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
   const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
 
@@ -84,11 +84,7 @@ export default function Account() {
       try {
         const response = await axios.patch(
           `${process.env.NEXT_PUBLIC_API_URI}/users`,
-          {
-            email: userData.email,
-            name: userData.name,
-            phone_number: userData.phone_number,
-          },
+          userData,
           {
             headers: {
               "auth-token": token,
@@ -98,11 +94,7 @@ export default function Account() {
 
         if (response.status == 200) {
           alert("La información de la cuenta se ha actualizado correctamente.");
-          setUserData({
-            email: "",
-            name: "",
-            phone_number: "",
-          });
+          localStorage.setItem("orienteering-me-token", response.data.token);
           router.push("/account");
         } else {
           setErrorRetrievingData(
@@ -157,6 +149,11 @@ export default function Account() {
           }}
           disableGutters
         >
+          <ErrorAlert
+            open={Boolean(errorRetrievingData)}
+            error={errorRetrievingData}
+            onClose={() => setErrorRetrievingData("")}
+          />
           <Box
             sx={{
               mt: { xs: 12, md: 20 },

@@ -68,7 +68,7 @@ export default function Account() {
     }
   }
 
-  async function patchAccount(this: any, event: any) {
+  async function patchAccount(event: any) {
     event.preventDefault();
     const wrongEmailFormat = !userData.email.match(
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -128,202 +128,196 @@ export default function Account() {
 
   if (!loaded) {
     return <LoadingBox />;
-  } else {
-    if (!token) {
-      return (
-        <ForbiddenPage
-          title="No has iniciado sesión"
-          message="Inicia sesión para poder ver esta página"
-          button_href="/login"
-          button_text="Iniciar sesión"
-        />
-      );
-    } else {
-      return (
-        <Container
-          maxWidth={false}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-          disableGutters
-        >
-          <ErrorAlert
-            open={Boolean(errorRetrievingData)}
-            error={errorRetrievingData}
-            onClose={() => setErrorRetrievingData("")}
-          />
-          <Box
+  }
+  if (!token) {
+    return (
+      <ForbiddenPage
+        title="No has iniciado sesión"
+        message="Inicia sesión para poder ver esta página"
+        button_href="/login"
+        button_text="Iniciar sesión"
+      />
+    );
+  }
+  return (
+    <Container
+      maxWidth={false}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+      disableGutters
+    >
+      <ErrorAlert
+        open={Boolean(errorRetrievingData)}
+        error={errorRetrievingData}
+        onClose={() => setErrorRetrievingData("")}
+      />
+      <Box
+        sx={{
+          mt: { xs: 12, md: 20 },
+          mb: 4,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "left",
+          padding: "2% 5%",
+          backgroundColor: "#ffffff",
+          width: { xs: "90%", md: "50%" },
+          borderRadius: "25px",
+        }}
+      >
+        <Breadcrumbs aria-label="breadcrumb">
+          <Link color="inherit" href="/">
+            Orienteering.me
+          </Link>
+          <Link color="inherit" href="/account">
+            Mi cuenta
+          </Link>
+          <Typography color="text.primary">Editar cuenta</Typography>
+        </Breadcrumbs>
+        <form onSubmit={patchAccount} style={{ width: "100%" }}>
+          <Typography
+            variant="h4"
+            noWrap
             sx={{
-              mt: { xs: 12, md: 20 },
-              mb: 4,
+              mt: 2,
+              mb: 2,
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "left",
-              padding: "2% 5%",
-              backgroundColor: "#ffffff",
-              width: { xs: "90%", md: "50%" },
-              borderRadius: "25px",
+              fontWeight: 700,
+              letterSpacing: ".1rem",
             }}
           >
-            <Breadcrumbs aria-label="breadcrumb">
-              <Link color="inherit" href="/">
-                Orienteering.me
-              </Link>
-              <Link color="inherit" href="/account">
-                Mi cuenta
-              </Link>
-              <Typography color="text.primary">Editar cuenta</Typography>
-            </Breadcrumbs>
-            <form
-              onSubmit={patchAccount}
-              action="login"
-              style={{ width: "100%" }}
+            Editar cuenta
+          </Typography>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
+              fontWeight: 700,
+            }}
+          >
+            Correo electrónico
+          </Typography>
+          <TextField
+            required
+            fullWidth
+            id="email-input"
+            placeholder="example@gmail.com"
+            variant="outlined"
+            margin="normal"
+            onChange={(e) =>
+              setUserData({
+                email: e.target.value,
+                name: userData.name,
+                phone_number: userData.phone_number,
+              })
+            }
+            value={userData.email}
+            error={wrongEmailFormat}
+          />
+          {wrongEmailFormat ? (
+            <Alert
+              variant="filled"
+              severity="error"
+              style={{ marginBottom: 5 }}
             >
-              <Typography
-                variant="h4"
-                noWrap
-                sx={{
-                  mt: 2,
-                  mb: 2,
-                  display: "flex",
-                  fontWeight: 700,
-                  letterSpacing: ".1rem",
-                }}
-              >
-                Editar cuenta
-              </Typography>
-              <Typography
-                variant="h6"
-                noWrap
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  fontWeight: 700,
-                }}
-              >
-                Correo electrónico
-              </Typography>
-              <TextField
-                required
-                fullWidth
-                id="email-input"
-                placeholder="example@gmail.com"
-                variant="outlined"
-                margin="normal"
-                onChange={(e) =>
-                  setUserData({
-                    email: e.target.value,
-                    name: userData.name,
-                    phone_number: userData.phone_number,
-                  })
-                }
-                value={userData.email}
-                error={wrongEmailFormat}
-              />
-              {wrongEmailFormat ? (
-                <Alert
-                  variant="filled"
-                  severity="error"
-                  style={{ marginBottom: 5 }}
-                >
-                  Formato incorrecto.
-                </Alert>
-              ) : (
-                <></>
-              )}
-              <Typography
-                variant="h6"
-                noWrap
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  fontWeight: 700,
-                }}
-              >
-                Nombre completo
-              </Typography>
-              <TextField
-                required
-                fullWidth
-                id="name-input"
-                variant="outlined"
-                margin="normal"
-                onChange={(e) =>
-                  setUserData({
-                    email: userData.email,
-                    name: e.target.value,
-                    phone_number: userData.phone_number,
-                  })
-                }
-                value={userData.name}
-              />
-              <Typography
-                variant="h6"
-                noWrap
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  fontWeight: 700,
-                }}
-              >
-                Teléfono
-              </Typography>
-              <TextField
-                fullWidth
-                id="phone-input"
-                placeholder="+34 123456789"
-                variant="outlined"
-                margin="normal"
-                onChange={(e) =>
-                  setUserData({
-                    email: userData.email,
-                    name: userData.name,
-                    phone_number: e.target.value,
-                  })
-                }
-                value={userData.phone_number}
-              />
-              {wrongPhoneFormat ? (
-                <Alert
-                  variant="filled"
-                  severity="error"
-                  style={{ marginBottom: 5 }}
-                >
-                  Formato incorrecto.
-                </Alert>
-              ) : (
-                <></>
-              )}
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                style={{
-                  marginTop: 15,
-                  marginBottom: 10,
-                  color: "white",
-                  fontWeight: 700,
-                }}
-              >
-                Confirmar
-              </Button>
-              <Button
-                variant="outlined"
-                fullWidth
-                style={{
-                  fontWeight: 700,
-                }}
-                href="/account"
-              >
-                Cancelar
-              </Button>
-            </form>
-          </Box>
-        </Container>
-      );
-    }
-  }
+              Formato incorrecto.
+            </Alert>
+          ) : (
+            <></>
+          )}
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
+              fontWeight: 700,
+            }}
+          >
+            Nombre completo
+          </Typography>
+          <TextField
+            required
+            fullWidth
+            id="name-input"
+            variant="outlined"
+            margin="normal"
+            onChange={(e) =>
+              setUserData({
+                email: userData.email,
+                name: e.target.value,
+                phone_number: userData.phone_number,
+              })
+            }
+            value={userData.name}
+          />
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
+              fontWeight: 700,
+            }}
+          >
+            Teléfono
+          </Typography>
+          <TextField
+            fullWidth
+            id="phone-input"
+            placeholder="+34 123456789"
+            variant="outlined"
+            margin="normal"
+            onChange={(e) =>
+              setUserData({
+                email: userData.email,
+                name: userData.name,
+                phone_number: e.target.value,
+              })
+            }
+            value={userData.phone_number}
+          />
+          {wrongPhoneFormat ? (
+            <Alert
+              variant="filled"
+              severity="error"
+              style={{ marginBottom: 5 }}
+            >
+              Formato incorrecto.
+            </Alert>
+          ) : (
+            <></>
+          )}
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            style={{
+              marginTop: 15,
+              marginBottom: 10,
+              color: "white",
+              fontWeight: 700,
+            }}
+          >
+            Confirmar
+          </Button>
+          <Button
+            variant="outlined"
+            fullWidth
+            style={{
+              fontWeight: 700,
+            }}
+            href="/account"
+          >
+            Cancelar
+          </Button>
+        </form>
+      </Box>
+    </Container>
+  );
 }

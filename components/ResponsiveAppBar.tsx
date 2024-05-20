@@ -24,9 +24,9 @@ const menuItems = [
 
 const authenticatedMenuItems = [
   { text: "Mi cuenta", href: "/account" },
-  { text: "Carreras favoritas", href: "/saved_courses" },
-  { text: "Crear carrera", href: "/new_course" },
-  { text: "Carreras creadas", href: "/created_courses" },
+  { text: "Carreras favoritas", href: "/course/favourites" },
+  { text: "Crear carrera", href: "/course/create" },
+  { text: "Carreras creadas", href: "/course/created" },
   { text: "Cerrar sesión", href: "/logout" },
 ];
 

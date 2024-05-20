@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import axios from "axios";
-import DeleteCourseFormDialog from "../components/DeleteCourseFormDialog";
+import DeleteCourseFormDialog from "../../components/DeleteCourseFormDialog";
 import dynamic from "next/dynamic";
 
-const CourseStreetMap = dynamic(() => import("../components/CourseStreetMap"), {
-  ssr: false,
-});
+const CourseStreetMap = dynamic(
+  () => import("../../components/CourseStreetMap"),
+  {
+    ssr: false,
+  }
+);
 
 interface CheckpointProps {
   _id: string;

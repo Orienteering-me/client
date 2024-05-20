@@ -1,34 +1,34 @@
-import { useState, useEffect } from "react";
+import { useEffect, useContext } from "react";
 import {
   MapContainer,
-  TileLayer,
   Marker,
   Popup,
+  TileLayer,
   useMap,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
+import "leaflet-defaulticon-compatibility";
 import { Icon } from "leaflet";
+import { CheckpointsContext } from "../../pages/course/create";
 import { Typography } from "@mui/material";
 
-function LocateMap() {
-  const map = useMap();
+function CreateCourseMap() {
+  const center = { lat: 40.421078, lng: -3.704622 };
+  const { courseName, checkpoints, setCheckpoints } =
+    useContext(CheckpointsContext);
 
-  useEffect(() => {
-    map.locate().on("locationfound", function (e) {
-      map.setView([e.latlng.lat, e.latlng.lng]);
-    });
-  }, [map]);
-
-  return null;
-}
-
-function OpenStreetMapCreateCourse() {
-  const Center = { lat: 40.421078, lng: -3.704622 };
-  const ZoomLevel = 8;
-  const [checkpoints, setCheckpoints] = useState<
-    { lat: number; lng: number }[]
-  >([]);
+  function LocateMap() {
+    const map = useMap();
+    useEffect(() => {
+      map.zoomControl.setPosition("bottomright");
+      map.locate().on("locationfound", function (e) {
+        map.setView([e.latlng.lat, e.latlng.lng], 8);
+      });
+    }, [map]);
+    return null;
+  }
 
   function CheckpointManager() {
     useMapEvents({
@@ -37,6 +37,8 @@ function OpenStreetMapCreateCourse() {
         setCheckpoints(
           checkpoints.concat([
             {
+              course: courseName,
+              number: checkpoints.length,
               lat: clicked_position.lat,
               lng: clicked_position.lng,
             },
@@ -53,52 +55,45 @@ function OpenStreetMapCreateCourse() {
       },
     });
 
-    return checkpoints.map(({ lat, lng }, index) => (
+    return checkpoints.map(({ lat, lng, number }, index) => (
       <Marker
         position={[lat, lng]}
         icon={
           new Icon({
             iconUrl:
               index == 0
-                ? "start_checkpoint_marker.svg"
+                ? "/start_checkpoint.svg"
                 : index == checkpoints.length - 1
-                ? "finish_checkpoint_marker.svg"
-                : "checkpoint_marker.svg",
-            iconSize: [50, 41],
-            iconAnchor: [25, 41],
+                ? "/finish_checkpoint.svg"
+                : "/checkpoint.svg",
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
           })
         }
         key={index}
       >
         <Popup>
-          Punto de control {index + 1} con latitud {lat} y longitud {lng}
+          <Typography
+            sx={{
+              display: "flex",
+              mt: 1,
+              fontSize: 15,
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            Punto de control {number + 1} con latitud {lat} y longitud {lng}
+          </Typography>
         </Popup>
       </Marker>
     ));
   }
 
   return (
-    <div className="container" style={{ height: "100%", width: "100%" }}>
-      <Typography
-        noWrap
-        sx={{
-          display: "flex",
-        }}
-      >
-        Para añadir un nuevo punto de control haga doble click sobre el mapa.
-      </Typography>
-      <Typography
-        noWrap
-        sx={{
-          display: "flex",
-          marginBottom: "1%",
-        }}
-      >
-        Para eliminar el último punto de control creado pulse Suprimir o Borrar.
-      </Typography>
+    <div className="container" style={{ width: "100%", height: "100%" }}>
       <MapContainer
-        center={Center}
-        zoom={ZoomLevel}
+        center={center}
+        zoom={5}
         doubleClickZoom={false}
         maxZoom={17}
       >
@@ -113,4 +108,4 @@ function OpenStreetMapCreateCourse() {
   );
 }
 
-export default OpenStreetMapCreateCourse;
+export default CreateCourseMap;

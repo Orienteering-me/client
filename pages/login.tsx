@@ -62,17 +62,15 @@ export default function Login() {
         );
       }
     } catch (error) {
+      console.log(error);
       if (error.response.status == 401) {
         setRequestError("La contraseña introducida es incorrecta.");
-        console.log(error);
       } else if (error.response.status == 404) {
         setRequestError("La cuenta introducida no existe.");
-        console.log(error);
       } else {
         setRequestError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
-        console.log(error);
       }
     }
   }

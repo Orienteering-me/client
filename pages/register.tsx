@@ -107,16 +107,15 @@ export default function Register() {
           );
         }
       } catch (error) {
+        console.log(error);
         if (error.response.status == 409) {
           setRequestError(
             "Ya existe una cuenta registrada con esta dirección de correo."
           );
-          console.log(error);
         } else {
           setRequestError(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
-          console.log(error);
         }
       }
     }

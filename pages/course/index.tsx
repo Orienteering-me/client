@@ -4,6 +4,7 @@ import axios from "axios";
 import DeleteCourseFormDialog from "../../components/DeleteCourseFormDialog";
 import dynamic from "next/dynamic";
 
+// TODO
 const CourseStreetMap = dynamic(
   () => import("../../components/CourseStreetMap"),
   {
@@ -19,7 +20,7 @@ interface CheckpointProps {
   qr_code: string;
 }
 
-export default function Course({ name }) {
+export default function Course({ courseName }: any) {
   const [token, setToken] = useState("");
   const [courseData, setCourseData] = useState({
     name: "Cargando...",
@@ -198,10 +199,7 @@ export default function Course({ name }) {
   );
 }
 
-Course.getInitialProps = async ({ query }) => {
-  // Access query parameters from query object
+Course.getInitialProps = async ({ query }: any) => {
   const { name } = query;
-  // Fetch data based on query parameters
-  // Return data as props
   return { name };
 };

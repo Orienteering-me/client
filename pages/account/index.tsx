@@ -53,17 +53,15 @@ export default function Account() {
         );
       }
     } catch (error) {
+      console.log(error);
       if (error.response.status == 401) {
         setRequestError("No tienes permisos para acceder a este recurso.");
-        console.log(error);
       } else if (error.response.status == 404) {
         setRequestError("La cuenta actual no existe.");
-        console.log(error);
       } else {
         setRequestError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
-        console.log(error);
       }
     }
   }
@@ -90,17 +88,15 @@ export default function Account() {
         );
       }
     } catch (error) {
+      console.log(error);
       if (error.response.status == 401) {
         setRequestError("No tienes permisos para acceder a este recurso.");
-        console.log(error);
       } else if (error.response.status == 404) {
         setRequestError("La cuenta actual no existe.");
-        console.log(error);
       } else {
         setRequestError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
-        console.log(error);
       }
     }
   };

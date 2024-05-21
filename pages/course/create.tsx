@@ -86,27 +86,21 @@ export default function NewCourse() {
             "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
           );
         }
-        router.push("/course?name=" + courseName);
       } catch (error) {
+        console.log(error);
         if (error.response.status == 409) {
           setRequestError("Ya existe una carrera registrada con este nombre.");
-          console.log(error);
         } else {
           setRequestError(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
-          console.log(error);
         }
       }
     }
   }
 
   useEffect(() => {
-    if (token) {
-      setLoaded(true);
-    } else {
-      setLoaded(true);
-    }
+    setLoaded(true);
   }, [token]);
 
   if (!loaded) {

@@ -16,6 +16,8 @@ import { TokenContext } from "../_app";
 import { useRouter } from "next/router";
 import ErrorAlert from "../../components/ErrorAlert";
 
+// TODO Cambiar Contraseña
+
 export default function Account() {
   const token = useContext(TokenContext);
   const router = useRouter();
@@ -51,19 +53,17 @@ export default function Account() {
         );
       }
     } catch (error) {
+      console.log(error);
       if (error.response.status == 401) {
         setErrorRetrievingData(
           "No tienes permisos para acceder a este recurso."
         );
-        console.log(error);
       } else if (error.response.status == 404) {
         setErrorRetrievingData("La cuenta actual no existe.");
-        console.log(error);
       } else {
         setErrorRetrievingData(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
-        console.log(error);
       }
     }
   }
@@ -102,16 +102,15 @@ export default function Account() {
           );
         }
       } catch (error) {
+        console.log(error);
         if (error.response.status == 409) {
           setErrorRetrievingData(
             "Ya existe una cuenta registrada con esta dirección de correo."
           );
-          console.log(error);
         } else {
           setErrorRetrievingData(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
-          console.log(error);
         }
       }
     }

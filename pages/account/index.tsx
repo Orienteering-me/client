@@ -19,18 +19,19 @@ import { TokenContext } from "../_app";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useRouter } from "next/router";
 
+interface UserData {
+  email: string;
+  name: string;
+  phone_number: string;
+}
+
 export default function Account() {
   const token = useContext(TokenContext);
   const router = useRouter();
 
-  const [loaded, setLoaded] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const [userData, setUserData] = useState({
-    email: "Cargando...",
-    name: "Cargando...",
-    phone_number: "Cargando...",
-  });
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   const [requestError, setRequestError] = useState("");
 
@@ -104,16 +105,12 @@ export default function Account() {
   useEffect(() => {
     if (token) {
       getUserData();
-      setLoaded(true);
-    } else {
-      setLoaded(true);
     }
   }, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (!token) {
+  } else if (token.length == 0) {
     return (
       <ForbiddenPage
         title="No has iniciado sesión"
@@ -122,200 +119,220 @@ export default function Account() {
         button_text="Iniciar sesión"
       />
     );
-  }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <Box
+  } else if (userData != null) {
+    return (
+      <Container
+        maxWidth={false}
         sx={{
-          mt: { xs: 12, md: 20 },
-          mb: 4,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "50%" },
-          borderRadius: "25px",
+          alignItems: "center",
         }}
+        disableGutters
       >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Orienteering.me
-          </Link>
-          <Typography color="text.primary">Mi cuenta</Typography>
-        </Breadcrumbs>
-        <Typography
-          variant="h4"
-          noWrap
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <Box
           sx={{
-            mt: 2,
-            mb: 2,
+            mt: { xs: 12, md: 20 },
+            mb: 4,
             display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "50%" },
+            borderRadius: "25px",
           }}
         >
-          Mi cuenta
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            mt: 2,
-            display: "flex",
-            fontWeight: 700,
-          }}
-        >
-          Correo electrónico
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
-            mt: 1,
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          {userData.email}
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            mt: 2,
-            display: "flex",
-            fontWeight: 700,
-          }}
-        >
-          Nombre completo
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
-            mt: 1,
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          {userData.name}
-        </Typography>
-        <Typography
-          variant="h6"
-          noWrap
-          sx={{
-            mt: 2,
-            display: "flex",
-            fontWeight: 700,
-          }}
-        >
-          Teléfono
-        </Typography>
-        <Typography
-          noWrap
-          sx={{
-            mt: 1,
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-          }}
-        >
-          {userData.phone_number}
-        </Typography>
-        <Button
-          variant="outlined"
-          style={{
-            marginTop: 15,
-            fontWeight: 700,
-          }}
-          href="/account/edit"
-        >
-          Editar cuenta
-        </Button>
-        <Button
-          variant="outlined"
-          style={{
-            marginTop: 5,
-            fontWeight: 700,
-          }}
-          href="/account/change_password"
-        >
-          Cambiar contraseña
-        </Button>
-        <Fragment>
-          <Button
-            variant="contained"
-            style={{
-              marginTop: 5,
-              color: "white",
-              backgroundColor: "red",
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/">
+              Orienteering.me
+            </Link>
+            <Typography color="text.primary">Mi cuenta</Typography>
+          </Breadcrumbs>
+          <Typography
+            variant="h4"
+            noWrap
+            sx={{
+              mt: 2,
+              mb: 2,
+              display: "flex",
+              fontWeight: 700,
+              letterSpacing: ".1rem",
+            }}
+          >
+            Mi cuenta
+          </Typography>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
               fontWeight: 700,
             }}
-            onClick={() => {
-              setOpenDeleteDialog(true);
+          >
+            Correo electrónico
+          </Typography>
+          <Typography
+            noWrap
+            sx={{
+              mt: 1,
+              mb: 2,
+              display: "flex",
+              fontWeight: 500,
             }}
           >
-            Borrar cuenta
+            {userData.email}
+          </Typography>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
+              fontWeight: 700,
+            }}
+          >
+            Nombre completo
+          </Typography>
+          <Typography
+            noWrap
+            sx={{
+              mt: 1,
+              mb: 2,
+              display: "flex",
+              fontWeight: 500,
+            }}
+          >
+            {userData.name}
+          </Typography>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{
+              mt: 2,
+              display: "flex",
+              fontWeight: 700,
+            }}
+          >
+            Teléfono
+          </Typography>
+          <Typography
+            noWrap
+            sx={{
+              mt: 1,
+              mb: 2,
+              display: "flex",
+              fontWeight: 500,
+            }}
+          >
+            {userData.phone_number}
+          </Typography>
+          <Button
+            variant="outlined"
+            style={{
+              marginTop: 15,
+              fontWeight: 700,
+            }}
+            href="/account/edit"
+          >
+            Editar cuenta
           </Button>
-          <Dialog
-            open={openDeleteDialog}
-            onClose={() => {
-              setOpenDeleteDialog(false);
+          <Button
+            variant="outlined"
+            style={{
+              marginTop: 5,
+              fontWeight: 700,
             }}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
+            href="/account/change_password"
           >
-            <DialogTitle id="alert-dialog-title">
-              {"¿Está seguro de que quiere borrar su cuenta?"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                Esta acción no se puede deshacer
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                variant="contained"
-                style={{
-                  marginBottom: 5,
-                  color: "white",
-                  backgroundColor: "red",
-                }}
-                onClick={deleteUser}
-              >
-                Aceptar
-              </Button>
-              <Button
-                variant="outlined"
-                style={{
-                  marginBottom: 5,
-                }}
-                onClick={() => {
-                  setOpenDeleteDialog(false);
-                }}
-                autoFocus
-              >
-                Cancelar
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Fragment>
-      </Box>
-    </Container>
-  );
+            Cambiar contraseña
+          </Button>
+          <Fragment>
+            <Button
+              variant="contained"
+              style={{
+                marginTop: 5,
+                color: "white",
+                backgroundColor: "red",
+                fontWeight: 700,
+              }}
+              onClick={() => {
+                setOpenDeleteDialog(true);
+              }}
+            >
+              Borrar cuenta
+            </Button>
+            <Dialog
+              open={openDeleteDialog}
+              onClose={() => {
+                setOpenDeleteDialog(false);
+              }}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
+            >
+              <DialogTitle id="alert-dialog-title">
+                {"¿Está seguro de que quiere borrar su cuenta?"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Esta acción no se puede deshacer
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant="contained"
+                  style={{
+                    marginBottom: 5,
+                    color: "white",
+                    backgroundColor: "red",
+                  }}
+                  onClick={deleteUser}
+                >
+                  Aceptar
+                </Button>
+                <Button
+                  variant="outlined"
+                  style={{
+                    marginBottom: 5,
+                  }}
+                  onClick={() => {
+                    setOpenDeleteDialog(false);
+                  }}
+                  autoFocus
+                >
+                  Cancelar
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Fragment>
+        </Box>
+      </Container>
+    );
+  } else {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <LoadingBox />
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+      </Container>
+    );
+  }
 }

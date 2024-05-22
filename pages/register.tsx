@@ -36,7 +36,6 @@ export default function Register() {
   });
   const [repeatedPassword, setRepeatedPassword] = useState("");
 
-  const [loaded, setLoaded] = useState(false);
   const [passwordScore, setPasswordScore] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
@@ -121,14 +120,255 @@ export default function Register() {
     }
   }
 
-  useEffect(() => {
-    setLoaded(true);
-  }, [token]);
+  useEffect(() => {}, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (token) {
+  } else if (token.length == 0) {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <Box
+          sx={{
+            mt: { xs: 12, md: 15 },
+            mb: 4,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "50%" },
+            borderRadius: "25px",
+          }}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/">
+              Orienteering.me
+            </Link>
+            <Typography color="text.primary">Regístrate</Typography>
+          </Breadcrumbs>
+          <form onSubmit={registerAccount} style={{ width: "100%" }}>
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+              }}
+            >
+              Regístrate
+            </Typography>
+            <Typography
+              sx={{
+                mb: 2,
+                fontWeight: 500,
+              }}
+            >
+              ¿Ya tienes una cuenta?&nbsp;
+              <Link href="login">Inicia sesión aquí.</Link>
+            </Typography>
+            <TextField
+              required
+              fullWidth
+              id="email-input"
+              label="Correo electrónico"
+              placeholder="example@gmail.com"
+              variant="outlined"
+              margin="normal"
+              onChange={(e) =>
+                setUserData({
+                  email: e.target.value,
+                  name: userData.name,
+                  phone_number: userData.phone_number,
+                  password: userData.password,
+                })
+              }
+              error={wrongEmailFormat}
+            />
+            {wrongEmailFormat ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginBottom: 5 }}
+              >
+                Formato incorrecto.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <TextField
+              required
+              fullWidth
+              id="name-input"
+              label="Nombre completo"
+              variant="outlined"
+              margin="normal"
+              onChange={(e) =>
+                setUserData({
+                  email: userData.email,
+                  name: e.target.value,
+                  phone_number: userData.phone_number,
+                  password: userData.password,
+                })
+              }
+            />
+            <TextField
+              fullWidth
+              id="phone-input"
+              label="Teléfono"
+              placeholder="+34 123456789"
+              variant="outlined"
+              margin="normal"
+              onChange={(e) =>
+                setUserData({
+                  email: userData.email,
+                  name: userData.name,
+                  phone_number: e.target.value,
+                  password: userData.password,
+                })
+              }
+            />
+            {wrongPhoneFormat ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginBottom: 5 }}
+              >
+                Formato incorrecto.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <FormControl
+              required
+              variant="outlined"
+              margin="normal"
+              error={wrongPasswordFormat}
+              sx={{ width: "100%" }}
+            >
+              <InputLabel htmlFor="password-input">Contraseña</InputLabel>
+              <OutlinedInput
+                id="password-input"
+                label="Contraseña"
+                onChange={(e) =>
+                  setUserData({
+                    email: userData.email,
+                    name: userData.name,
+                    phone_number: userData.phone_number,
+                    password: e.target.value,
+                  })
+                }
+                type={showPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Cambia la visibilidad de la contraseña"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            <PasswordStrengthBar
+              password={userData.password}
+              scoreWords={[
+                "Muy débil",
+                "Débil",
+                "Fuerte",
+                "Muy fuerte",
+                "Ideal",
+              ]}
+              minLength={0}
+              onChangeScore={(score, feedback) => setPasswordScore(score)}
+            />
+            {wrongPasswordFormat ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginBottom: 5 }}
+              >
+                La contraseña debe tener una puntuación de fuerte como mínimo.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <FormControl
+              required
+              variant="outlined"
+              margin="normal"
+              error={repeatedPasswordError}
+              sx={{ width: "100%" }}
+            >
+              <InputLabel htmlFor="repeat-password-input">
+                Repetir contraseña
+              </InputLabel>
+              <OutlinedInput
+                id="repeat-password-input"
+                label="Repetir contraseña"
+                onChange={(e) => setRepeatedPassword(e.target.value)}
+                type={showRepeatPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Cambia la visibilidad de la contraseña"
+                      onClick={handleClickShowRepeatPassword}
+                      onMouseDown={handleMouseDownRepeatPassword}
+                      edge="end"
+                    >
+                      {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            {repeatedPasswordError ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginBottom: 5 }}
+              >
+                Las contraseñas no coinciden.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              style={{
+                marginTop: 25,
+                marginBottom: 10,
+                color: "white",
+                fontWeight: 700,
+              }}
+            >
+              Crear cuenta
+            </Button>
+          </form>
+        </Box>
+      </Container>
+    );
+  } else {
     return (
       <ForbiddenPage
         title="Ya tienes una sesión iniciada"
@@ -138,241 +378,4 @@ export default function Register() {
       />
     );
   }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <Box
-        sx={{
-          mt: { xs: 12, md: 15 },
-          mb: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "50%" },
-          borderRadius: "25px",
-        }}
-      >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Orienteering.me
-          </Link>
-          <Typography color="text.primary">Regístrate</Typography>
-        </Breadcrumbs>
-        <form onSubmit={registerAccount} style={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            sx={{
-              mt: 2,
-              mb: 2,
-              display: "flex",
-              fontWeight: 700,
-              letterSpacing: ".1rem",
-            }}
-          >
-            Regístrate
-          </Typography>
-          <Typography
-            sx={{
-              mb: 2,
-              fontWeight: 500,
-            }}
-          >
-            ¿Ya tienes una cuenta?&nbsp;
-            <Link href="login">Inicia sesión aquí.</Link>
-          </Typography>
-          <TextField
-            required
-            fullWidth
-            id="email-input"
-            label="Correo electrónico"
-            placeholder="example@gmail.com"
-            variant="outlined"
-            margin="normal"
-            onChange={(e) =>
-              setUserData({
-                email: e.target.value,
-                name: userData.name,
-                phone_number: userData.phone_number,
-                password: userData.password,
-              })
-            }
-            error={wrongEmailFormat}
-          />
-          {wrongEmailFormat ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{ marginBottom: 5 }}
-            >
-              Formato incorrecto.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <TextField
-            required
-            fullWidth
-            id="name-input"
-            label="Nombre completo"
-            variant="outlined"
-            margin="normal"
-            onChange={(e) =>
-              setUserData({
-                email: userData.email,
-                name: e.target.value,
-                phone_number: userData.phone_number,
-                password: userData.password,
-              })
-            }
-          />
-          <TextField
-            fullWidth
-            id="phone-input"
-            label="Teléfono"
-            placeholder="+34 123456789"
-            variant="outlined"
-            margin="normal"
-            onChange={(e) =>
-              setUserData({
-                email: userData.email,
-                name: userData.name,
-                phone_number: e.target.value,
-                password: userData.password,
-              })
-            }
-          />
-          {wrongPhoneFormat ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{ marginBottom: 5 }}
-            >
-              Formato incorrecto.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <FormControl
-            required
-            variant="outlined"
-            margin="normal"
-            error={wrongPasswordFormat}
-            sx={{ width: "100%" }}
-          >
-            <InputLabel htmlFor="password-input">Contraseña</InputLabel>
-            <OutlinedInput
-              id="password-input"
-              label="Contraseña"
-              onChange={(e) =>
-                setUserData({
-                  email: userData.email,
-                  name: userData.name,
-                  phone_number: userData.phone_number,
-                  password: e.target.value,
-                })
-              }
-              type={showPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Cambia la visibilidad de la contraseña"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-          <PasswordStrengthBar
-            password={userData.password}
-            scoreWords={["Muy débil", "Débil", "Fuerte", "Muy fuerte", "Ideal"]}
-            minLength={0}
-            onChangeScore={(score, feedback) => setPasswordScore(score)}
-          />
-          {wrongPasswordFormat ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{ marginBottom: 5 }}
-            >
-              La contraseña debe tener una puntuación de fuerte como mínimo.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <FormControl
-            required
-            variant="outlined"
-            margin="normal"
-            error={repeatedPasswordError}
-            sx={{ width: "100%" }}
-          >
-            <InputLabel htmlFor="repeat-password-input">
-              Repetir contraseña
-            </InputLabel>
-            <OutlinedInput
-              id="repeat-password-input"
-              label="Repetir contraseña"
-              onChange={(e) => setRepeatedPassword(e.target.value)}
-              type={showRepeatPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Cambia la visibilidad de la contraseña"
-                    onClick={handleClickShowRepeatPassword}
-                    onMouseDown={handleMouseDownRepeatPassword}
-                    edge="end"
-                  >
-                    {showRepeatPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-          {repeatedPasswordError ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{ marginBottom: 5 }}
-            >
-              Las contraseñas no coinciden.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            style={{
-              marginTop: 25,
-              marginBottom: 10,
-              color: "white",
-              fontWeight: 700,
-            }}
-          >
-            Crear cuenta
-          </Button>
-        </form>
-      </Box>
-    </Container>
-  );
 }

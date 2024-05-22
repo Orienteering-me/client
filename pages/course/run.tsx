@@ -18,6 +18,20 @@ import ErrorAlert from "../../components/ErrorAlert";
 import Link from "next/link";
 import { UploadImageCard } from "../../components/UploadImageCard";
 
+interface Checkpoint {
+  _id: string;
+  number: number;
+  lat: number;
+  lng: number;
+  qr_code: string;
+}
+
+interface CourseData {
+  name: string;
+  admin: string;
+  checkpoints: Checkpoint[];
+}
+
 interface Location {
   lat: number;
   lng: number;
@@ -45,11 +59,7 @@ export default function RunCourse({ name }: any) {
   const token = useContext(TokenContext);
   const router = useRouter();
 
-  const [courseData, setCourseData] = useState({
-    name: "Cargando...",
-    admin: "Cargando...",
-    checkpoints: [],
-  });
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [qrCodes, setQrCodes] = useState<(string | null)[]>([]);
   const [locations, setLocations] = useState<(Location | null)[]>([]);
   const [dates, setDates] = useState<(Date | null)[]>([]);
@@ -73,11 +83,11 @@ export default function RunCourse({ name }: any) {
 
       if (response.status == 200) {
         setCourseData({
-          name: response.data[0].name,
-          admin: response.data[0].admin.name,
-          checkpoints: response.data[0].checkpoints,
+          name: response.data.course.name,
+          admin: response.data.course.admin.name,
+          checkpoints: response.data.course.checkpoints,
         });
-        const imagesDataInit = response.data[0].checkpoints.map(() => {
+        const imagesDataInit = response.data.course.checkpoints.map(() => {
           return null;
         });
         setQrCodes(imagesDataInit);
@@ -108,7 +118,7 @@ export default function RunCourse({ name }: any) {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URI}/stats`,
         {
-          course: courseData.name,
+          course: courseData!.name,
           qrCodes: qrCodes,
         },
         {
@@ -156,10 +166,9 @@ export default function RunCourse({ name }: any) {
     }
   }, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (!token) {
+  } else if (token.length == 0) {
     return (
       <ForbiddenPage
         title="No has iniciado sesión"
@@ -168,135 +177,155 @@ export default function RunCourse({ name }: any) {
         button_text="Iniciar sesión"
       />
     );
-  }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <Box
+  } else if (courseData != null) {
+    return (
+      <Container
+        maxWidth={false}
         sx={{
-          mt: { xs: 12, md: 15 },
-          mb: 4,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "80%" },
-          borderRadius: "25px",
+          alignItems: "center",
         }}
+        disableGutters
       >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Orienteering.me
-          </Link>
-          <Link color="inherit" href={"/course?name=" + courseData.name}>
-            {courseData.name}
-          </Link>
-          <Typography color="text.primary">Subir resultados</Typography>
-        </Breadcrumbs>
-        <form onSubmit={sendQrs} style={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            sx={{
-              mt: 2,
-              display: "flex",
-              fontWeight: 700,
-              letterSpacing: ".1rem",
-            }}
-          >
-            Subir resultados
-          </Typography>
-          <Typography
-            variant="h5"
-            noWrap
-            sx={{
-              display: "flex",
-              fontWeight: 700,
-            }}
-          >
-            {courseData.name}
-          </Typography>
-          <Typography
-            color="text.secondary"
-            sx={{
-              mt: 2,
-            }}
-          >
-            * Sube las fotos de los QR en cualquier orden para obtener tus
-            resultados.
-          </Typography>
-          <Typography
-            color="text.secondary"
-            sx={{
-              fontWeight: 700,
-            }}
-          >
-            * Asegúrate de compartir la ubicación de la foto o no se podrá
-            procesar el QR.
-          </Typography>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              mt: 4,
-              mb: 2,
-              display: "flex",
-              fontWeight: 700,
-            }}
-          >
-            Subir imágenes
-          </Typography>
-          <ImagesDataContext.Provider
-            value={{
-              qrCodes,
-              setQrCodes,
-              locations,
-              setLocations,
-              dates,
-              setDates,
-            }}
-          >
-            <Grid
-              container
-              rowSpacing={3}
-              columnSpacing={3}
-              justifyContent="center"
-              mb={3}
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <Box
+          sx={{
+            mt: { xs: 12, md: 15 },
+            mb: 4,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "80%" },
+            borderRadius: "25px",
+          }}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/">
+              Orienteering.me
+            </Link>
+            <Link color="inherit" href={"/course?name=" + courseData.name}>
+              {courseData.name}
+            </Link>
+            <Typography color="text.primary">Subir resultados</Typography>
+          </Breadcrumbs>
+          <form onSubmit={sendQrs} style={{ width: "100%" }}>
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+              }}
             >
-              {courseData.checkpoints.map((checkpoint, index) => {
-                return <UploadImageCard index={index} key={index} />;
-              })}
-            </Grid>
-          </ImagesDataContext.Provider>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            style={{
-              marginBottom: 10,
-              color: "white",
-              fontWeight: 700,
-            }}
-          >
-            Subir resultados
-          </Button>
-        </form>
-      </Box>
-    </Container>
-  );
+              Subir resultados
+            </Typography>
+            <Typography
+              variant="h5"
+              noWrap
+              sx={{
+                display: "flex",
+                fontWeight: 700,
+              }}
+            >
+              {courseData.name}
+            </Typography>
+            <Typography
+              color="text.secondary"
+              sx={{
+                mt: 2,
+              }}
+            >
+              * Sube las fotos de los QR en cualquier orden para obtener tus
+              resultados.
+            </Typography>
+            <Typography
+              color="text.secondary"
+              sx={{
+                fontWeight: 700,
+              }}
+            >
+              * Asegúrate de compartir la ubicación de la foto o no se podrá
+              procesar el QR.
+            </Typography>
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                mt: 4,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+              }}
+            >
+              Subir imágenes
+            </Typography>
+            <ImagesDataContext.Provider
+              value={{
+                qrCodes,
+                setQrCodes,
+                locations,
+                setLocations,
+                dates,
+                setDates,
+              }}
+            >
+              <Grid
+                container
+                rowSpacing={3}
+                columnSpacing={3}
+                justifyContent="center"
+                mb={3}
+              >
+                {courseData.checkpoints.map((checkpoint, index) => {
+                  return <UploadImageCard index={index} key={index} />;
+                })}
+              </Grid>
+            </ImagesDataContext.Provider>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              style={{
+                marginBottom: 10,
+                color: "white",
+                fontWeight: 700,
+              }}
+            >
+              Subir resultados
+            </Button>
+          </form>
+        </Box>
+      </Container>
+    );
+  } else {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <LoadingBox />
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+      </Container>
+    );
+  }
 }
 
 RunCourse.getInitialProps = async ({ query }: any) => {

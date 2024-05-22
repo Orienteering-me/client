@@ -43,14 +43,12 @@ export const CheckpointsContext = createContext<CreateCourseContextType>({
   setCheckpoints: () => {},
 });
 
-export default function NewCourse() {
+export default function CreateCourse() {
   const token = useContext(TokenContext);
   const router = useRouter();
 
   const [courseName, setCourseName] = useState("");
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
-
-  const [loaded, setLoaded] = useState(false);
 
   const [requestError, setRequestError] = useState("");
   const [courseNameHasSpecialCharacters, setCourseNameHasSpecialCharacters] =
@@ -100,14 +98,11 @@ export default function NewCourse() {
     }
   }
 
-  useEffect(() => {
-    setLoaded(true);
-  }, [token]);
+  useEffect(() => {}, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (!token) {
+  } else if (token.length == 0) {
     return (
       <ForbiddenPage
         title="No has iniciado sesión"
@@ -116,134 +111,140 @@ export default function NewCourse() {
         button_text="Iniciar sesión"
       />
     );
-  }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <Box
+  } else {
+    return (
+      <Container
+        maxWidth={false}
         sx={{
-          mt: { xs: 12, md: 15 },
-          mb: 4,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "80%" },
-          borderRadius: "25px",
+          alignItems: "center",
         }}
+        disableGutters
       >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Orienteering.me
-          </Link>
-          <Typography color="text.primary">Crear nueva carrera</Typography>
-        </Breadcrumbs>
-        <form onSubmit={createCourse} style={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            sx={{
-              mt: 2,
-              mb: 2,
-              display: "flex",
-              fontWeight: 700,
-              letterSpacing: ".1rem",
-            }}
-          >
-            Crear nueva carrera
-          </Typography>
-          <TextField
-            required
-            fullWidth
-            id="name-input"
-            label="Nombre de la carrera"
-            variant="outlined"
-            margin="normal"
-            onChange={(e) => setCourseName(e.target.value)}
-          />
-          {courseNameHasSpecialCharacters ? (
-            <Alert
-              variant="filled"
-              severity="error"
-              style={{ marginBottom: 20 }}
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <Box
+          sx={{
+            mt: { xs: 12, md: 15 },
+            mb: 4,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "80%" },
+            borderRadius: "25px",
+          }}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/">
+              Orienteering.me
+            </Link>
+            <Typography color="text.primary">Crear nueva carrera</Typography>
+          </Breadcrumbs>
+          <form onSubmit={createCourse} style={{ width: "100%" }}>
+            <Typography
+              variant="h4"
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+              }}
             >
-              El nombre de una carrera no puede contener caracteres especiales.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <Typography
-            sx={{
-              display: "flex",
-              mt: 1,
-              fontSize: 15,
-            }}
-          >
-            * Para añadir un nuevo punto de control haga doble click sobre el
-            mapa.
-          </Typography>
-          <Typography
-            sx={{
-              display: "flex",
-              mb: 2,
-              fontSize: 15,
-            }}
-          >
-            * Para eliminar el último punto de control creado pulse Suprimir o
-            Borrar.
-          </Typography>
-          <CheckpointsContext.Provider
-            value={{ courseName, checkpoints, setCheckpoints }}
-          >
-            <CreateCourseMap />
-          </CheckpointsContext.Provider>
-          {!validNumberOfCheckpoints ? (
-            <Alert variant="filled" severity="error" style={{ marginTop: 10 }}>
-              Una carrera debe tener un mínimo de dos puntos de control.
-            </Alert>
-          ) : (
-            <></>
-          )}
-          <Button
-            variant="outlined"
-            fullWidth
-            style={{
-              marginTop: 25,
-              fontWeight: 700,
-            }}
-            onClick={() => {
-              setCheckpoints(checkpoints.slice(0, -1));
-            }}
-          >
-            Borrar último punto de control
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            style={{
-              marginTop: 5,
-              color: "white",
-              fontWeight: 700,
-            }}
-          >
-            Crear recorrido
-          </Button>
-        </form>
-      </Box>
-    </Container>
-  );
+              Crear nueva carrera
+            </Typography>
+            <TextField
+              required
+              fullWidth
+              id="name-input"
+              label="Nombre de la carrera"
+              variant="outlined"
+              margin="normal"
+              onChange={(e) => setCourseName(e.target.value)}
+            />
+            {courseNameHasSpecialCharacters ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginBottom: 20 }}
+              >
+                El nombre de una carrera no puede contener caracteres
+                especiales.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <Typography
+              sx={{
+                display: "flex",
+                mt: 1,
+                fontSize: 15,
+              }}
+            >
+              * Para añadir un nuevo punto de control haga doble click sobre el
+              mapa.
+            </Typography>
+            <Typography
+              sx={{
+                display: "flex",
+                mb: 2,
+                fontSize: 15,
+              }}
+            >
+              * Para eliminar el último punto de control creado pulse Suprimir o
+              Borrar.
+            </Typography>
+            <CheckpointsContext.Provider
+              value={{ courseName, checkpoints, setCheckpoints }}
+            >
+              <CreateCourseMap />
+            </CheckpointsContext.Provider>
+            {!validNumberOfCheckpoints ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginTop: 10 }}
+              >
+                Una carrera debe tener un mínimo de dos puntos de control.
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <Button
+              variant="outlined"
+              fullWidth
+              style={{
+                marginTop: 25,
+                fontWeight: 700,
+              }}
+              onClick={() => {
+                setCheckpoints(checkpoints.slice(0, -1));
+              }}
+            >
+              Borrar último punto de control
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              style={{
+                marginTop: 5,
+                color: "white",
+                fontWeight: 700,
+              }}
+            >
+              Crear recorrido
+            </Button>
+          </form>
+        </Box>
+      </Container>
+    );
+  }
 }

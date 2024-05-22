@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-interface CoursesProps {
+interface MainPageMapProps {
   courses: {
     name: string;
     admin: string;
@@ -14,7 +14,7 @@ interface CoursesProps {
   }[];
 }
 
-function MainPageMap({ courses }: CoursesProps) {
+function MainPageMap({ courses }: MainPageMapProps) {
   const center = { lat: 40.421078, lng: -3.704622 };
 
   function LocateMap() {
@@ -43,10 +43,9 @@ function MainPageMap({ courses }: CoursesProps) {
             <Popup>
               <Typography
                 sx={{
-                  m: 2,
-                  mb: 1,
                   display: "flex",
                   justifyContent: "center",
+                  textAlign: "center",
                 }}
               >
                 "{name}", creado por {admin}

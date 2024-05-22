@@ -10,7 +10,7 @@ const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
 });
 
-interface CourseProps {
+interface APICourse {
   name: string;
   admin: { _id: string; name: string };
   checkpoints: [
@@ -18,12 +18,17 @@ interface CourseProps {
   ];
 }
 
+interface CoursesProps {
+  name: string;
+  admin: string;
+  lat: number;
+  lng: number;
+}
+
 export default function Main() {
   const token = useContext(TokenContext);
 
-  const [courses, setCourses] = useState([]);
-
-  const [loaded, setLoaded] = useState(false);
+  const [courses, setCourses] = useState<CoursesProps[] | null>(null);
 
   const [requestError, setRequestError] = useState("");
 
@@ -40,7 +45,7 @@ export default function Main() {
         );
         if (response.status == 200) {
           setCourses(
-            response.data.map((course: CourseProps) => {
+            response.data.map((course: APICourse) => {
               return {
                 name: course.name,
                 admin: course.admin.name,
@@ -75,13 +80,11 @@ export default function Main() {
     if (token) {
       getData();
     }
-    setLoaded(true);
   }, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (!token) {
+  } else if (token.length == 0) {
     return (
       <Box
         sx={{
@@ -158,23 +161,43 @@ export default function Main() {
         </Button>
       </Box>
     );
+  } else if (courses != null) {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <MainPageMap courses={courses} />
+      </Container>
+    );
+  } else {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <LoadingBox />
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+      </Container>
+    );
   }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <MainPageMap courses={courses} />
-    </Container>
-  );
 }

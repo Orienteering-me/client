@@ -20,11 +20,14 @@ import ErrorAlert from "../../components/ErrorAlert";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-const CourseMap = dynamic(() => import("../../components/maps/CourseMap"), {
-  ssr: false,
-});
+const ViewCourseMap = dynamic(
+  () => import("../../components/maps/ViewCourseMap"),
+  {
+    ssr: false,
+  }
+);
 
-interface CheckpointProps {
+interface Checkpoint {
   _id: string;
   number: number;
   lat: number;
@@ -35,7 +38,7 @@ interface CheckpointProps {
 interface CourseData {
   name: string;
   admin: string;
-  checkpoints: CheckpointProps[];
+  checkpoints: Checkpoint[];
 }
 
 export default function Course({ name }: any) {
@@ -208,10 +211,10 @@ export default function Course({ name }: any) {
           >
             {courseData.admin}
           </Typography>
-          <CourseMap
+          <ViewCourseMap
             course_name={name}
             checkpoints={courseData.checkpoints.map(
-              (checkpoint: CheckpointProps) => {
+              (checkpoint: Checkpoint) => {
                 return {
                   number: checkpoint.number,
                   lat: checkpoint.lat,

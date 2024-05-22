@@ -7,23 +7,23 @@ import ForbiddenPage from "../components/ForbiddenPage";
 export default function Logout() {
   const token = useContext(TokenContext);
 
-  const [loaded, setLoaded] = useState(false);
-  const [loggedOut, setLoggedOut] = useState(false);
+  const [loggedOut, setLoggedOut] = useState<Boolean | null>(null);
 
   useEffect(() => {
-    if (token) {
-      localStorage.removeItem("orienteering-me-token");
-      setLoggedOut(true);
-      setLoaded(true);
-    } else {
-      setLoaded(true);
+    // Runs only the first time the page is loaded
+    if (loggedOut == null && token != null) {
+      if (token != "") {
+        localStorage.removeItem("orienteering-me-token");
+        setLoggedOut(true);
+      } else {
+        setLoggedOut(false);
+      }
     }
   }, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (!loggedOut) {
+  } else if (!loggedOut) {
     return (
       <ForbiddenPage
         title="No has iniciado sesión"
@@ -32,76 +32,79 @@ export default function Logout() {
         button_text="Iniciar sesión"
       />
     );
-  }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <Box
+  } else if (loggedOut) {
+    return (
+      <Container
+        maxWidth={false}
         sx={{
-          mt: 25,
-          mb: 4,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "50%" },
-          borderRadius: "25px",
+          alignItems: "center",
         }}
+        disableGutters
       >
-        <Typography
-          variant="h4"
+        <Box
           sx={{
-            mt: 2,
-            mb: 2,
+            mt: 25,
+            mb: 4,
             display: "flex",
-            fontWeight: 700,
-            letterSpacing: ".1rem",
+            flexDirection: "column",
             justifyContent: "center",
-            textAlign: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "50%" },
+            borderRadius: "25px",
           }}
         >
-          Sesión cerrada
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            mt: 2,
-            mb: 2,
-            display: "flex",
-            fontWeight: 500,
-            justifyContent: "center",
-            textAlign: "center",
-          }}
-        >
-          Se ha cerrado la sesión correctamente
-        </Typography>
-        <Button
-          variant="contained"
-          href="."
-          style={{
-            marginTop: 50,
-            marginBottom: "1rem",
-            marginLeft: "15%",
-            color: "white",
-            fontWeight: 700,
-            width: "70%",
-            justifyContent: "center",
-            textAlign: "center",
-          }}
-          color="primary"
-        >
-          Volver al inicio
-        </Button>
-      </Box>
-    </Container>
-  );
+          <Typography
+            variant="h4"
+            sx={{
+              mt: 2,
+              mb: 2,
+              display: "flex",
+              fontWeight: 700,
+              letterSpacing: ".1rem",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            Sesión cerrada
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              mt: 2,
+              mb: 2,
+              display: "flex",
+              fontWeight: 500,
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
+            Se ha cerrado la sesión correctamente
+          </Typography>
+          <Button
+            variant="contained"
+            href="."
+            style={{
+              marginTop: 50,
+              marginBottom: "1rem",
+              marginLeft: "15%",
+              color: "white",
+              fontWeight: 700,
+              width: "70%",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+            color="primary"
+          >
+            Volver al inicio
+          </Button>
+        </Box>
+      </Container>
+    );
+  } else {
+    return <LoadingBox />;
+  }
 }

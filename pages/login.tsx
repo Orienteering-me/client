@@ -25,7 +25,6 @@ export default function Login() {
   const token = useContext(TokenContext);
   const router = useRouter();
 
-  const [loaded, setLoaded] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -75,14 +74,123 @@ export default function Login() {
     }
   }
 
-  useEffect(() => {
-    setLoaded(true);
-  }, [token]);
+  useEffect(() => {}, [token]);
 
-  if (!loaded) {
+  if (token == null) {
     return <LoadingBox />;
-  }
-  if (token) {
+  } else if (token.length == 0) {
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <ErrorAlert
+          open={Boolean(requestError)}
+          error={requestError}
+          onClose={() => setRequestError("")}
+        />
+        <Box
+          sx={{
+            mt: 20,
+            mb: 4,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "left",
+            padding: "2% 5%",
+            backgroundColor: "#ffffff",
+            width: { xs: "90%", md: "50%" },
+            borderRadius: "25px",
+          }}
+        >
+          <Breadcrumbs aria-label="breadcrumb">
+            <Link color="inherit" href="/">
+              Orienteering.me
+            </Link>
+            <Typography color="text.primary">Login</Typography>
+          </Breadcrumbs>
+          <form onSubmit={login} style={{ width: "100%" }}>
+            <Typography
+              variant="h4"
+              noWrap
+              sx={{
+                mt: 2,
+                mb: 2,
+                display: "flex",
+                fontWeight: 700,
+                letterSpacing: ".1rem",
+              }}
+            >
+              Inicia sesión
+            </Typography>
+            <Typography
+              sx={{
+                mb: 2,
+                fontWeight: 500,
+              }}
+            >
+              ¿Aún no tienes una cuenta?&nbsp;
+              <Link href="register">Regístrate aquí.</Link>
+            </Typography>
+            <TextField
+              required
+              fullWidth
+              id="email-input"
+              label="Correo electrónico"
+              placeholder="example@gmail.com"
+              variant="outlined"
+              margin="normal"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <FormControl
+              required
+              variant="outlined"
+              margin="normal"
+              sx={{ width: "100%" }}
+            >
+              <InputLabel htmlFor="password-input">Contraseña</InputLabel>
+              <OutlinedInput
+                id="password-input"
+                label="Contraseña"
+                onChange={(e) => setPassword(e.target.value)}
+                type={showPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Cambia la visibilidad de la contraseña"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              style={{
+                marginTop: 25,
+                marginBottom: 10,
+                color: "white",
+                fontWeight: 700,
+              }}
+            >
+              Iniciar sesión
+            </Button>
+          </form>
+        </Box>
+      </Container>
+    );
+  } else {
     return (
       <ForbiddenPage
         title="Ya tienes una sesión iniciada"
@@ -92,115 +200,4 @@ export default function Login() {
       />
     );
   }
-  return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-      disableGutters
-    >
-      <ErrorAlert
-        open={Boolean(requestError)}
-        error={requestError}
-        onClose={() => setRequestError("")}
-      />
-      <Box
-        sx={{
-          mt: 20,
-          mb: 4,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "left",
-          padding: "2% 5%",
-          backgroundColor: "#ffffff",
-          width: { xs: "90%", md: "50%" },
-          borderRadius: "25px",
-        }}
-      >
-        <Breadcrumbs aria-label="breadcrumb">
-          <Link color="inherit" href="/">
-            Orienteering.me
-          </Link>
-          <Typography color="text.primary">Login</Typography>
-        </Breadcrumbs>
-        <form onSubmit={login} style={{ width: "100%" }}>
-          <Typography
-            variant="h4"
-            noWrap
-            sx={{
-              mt: 2,
-              mb: 2,
-              display: "flex",
-              fontWeight: 700,
-              letterSpacing: ".1rem",
-            }}
-          >
-            Inicia sesión
-          </Typography>
-          <Typography
-            sx={{
-              mb: 2,
-              fontWeight: 500,
-            }}
-          >
-            ¿Aún no tienes una cuenta?&nbsp;
-            <Link href="register">Regístrate aquí.</Link>
-          </Typography>
-          <TextField
-            required
-            fullWidth
-            id="email-input"
-            label="Correo electrónico"
-            placeholder="example@gmail.com"
-            variant="outlined"
-            margin="normal"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <FormControl
-            required
-            variant="outlined"
-            margin="normal"
-            sx={{ width: "100%" }}
-          >
-            <InputLabel htmlFor="password-input">Contraseña</InputLabel>
-            <OutlinedInput
-              id="password-input"
-              label="Contraseña"
-              onChange={(e) => setPassword(e.target.value)}
-              type={showPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="Cambia la visibilidad de la contraseña"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            style={{
-              marginTop: 25,
-              marginBottom: 10,
-              color: "white",
-              fontWeight: 700,
-            }}
-          >
-            Iniciar sesión
-          </Button>
-        </form>
-      </Box>
-    </Container>
-  );
 }

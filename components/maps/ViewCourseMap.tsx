@@ -18,9 +18,8 @@ interface CourseMapProps {
   auth: boolean;
 }
 
-function CourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
+function ViewCourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
   const Center = { lat: 40.421078, lng: -3.704622 };
-  const ZoomLevel = 8;
 
   function LocateMap() {
     const map = useMap();
@@ -49,7 +48,7 @@ function CourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
     <div className="container" style={{ height: "100%", width: "100%" }}>
       <MapContainer
         center={Center}
-        zoom={ZoomLevel}
+        zoom={10}
         doubleClickZoom={false}
         maxZoom={17}
       >
@@ -80,6 +79,7 @@ function CourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
                 sx={{
                   display: "flex",
                   justifyContent: "center",
+                  textAlign: "center",
                 }}
               >
                 Punto de control {number + 1}
@@ -123,4 +123,4 @@ function CourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
   );
 }
 
-export default CourseMap;
+export default ViewCourseMap;

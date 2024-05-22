@@ -76,8 +76,6 @@ function CreateCourseMap() {
           <Typography
             sx={{
               display: "flex",
-              mt: 1,
-              fontSize: 15,
               justifyContent: "center",
               textAlign: "center",
             }}

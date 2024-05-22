@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { Button, Typography } from "@mui/material";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -42,8 +42,6 @@ function MainPageMap({ courses }: CoursesProps) {
           <Marker position={[lat, lng]} key={name}>
             <Popup>
               <Typography
-                variant="h6"
-                noWrap
                 sx={{
                   m: 2,
                   mb: 1,

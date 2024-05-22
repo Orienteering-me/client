@@ -8,7 +8,7 @@ import {
   Grid,
   Typography,
 } from "@mui/material";
-import jsQR, { QRCode } from "jsqr";
+import jsQR from "jsqr";
 import { useContext, useState } from "react";
 import { ImagesDataContext } from "../pages/course/run";
 import exifr from "exifr";

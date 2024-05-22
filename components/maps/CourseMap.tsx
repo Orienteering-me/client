@@ -1,22 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "leaflet";
-import { Typography } from "@mui/material";
-import QRCode from "react-qr-code";
+import { Button, Container, Typography } from "@mui/material";
+import { QRCode } from "react-qrcode-logo";
 
-interface CheckpointProps {
+interface Checkpoint {
   number: number;
   lat: number;
   lng: number;
   qr_code: string;
 }
 
-interface CheckpointsProps {
-  checkpoints: CheckpointProps[];
+interface CourseMapProps {
+  course_name: string;
+  checkpoints: Checkpoint[];
+  auth: boolean;
 }
 
-function CourseStreetMap({ checkpoints }: CheckpointsProps) {
+function CourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
   const Center = { lat: 40.421078, lng: -3.704622 };
   const ZoomLevel = 8;
 
@@ -28,6 +30,19 @@ function CourseStreetMap({ checkpoints }: CheckpointsProps) {
     }, [map]);
 
     return null;
+  }
+
+  function downloadQR(number: number) {
+    const canvas: any = document.getElementById("qr-code");
+    if (canvas) {
+      const pngUrl = canvas.toDataURL("image/png");
+      let downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = `${course_name}-${number + 1}`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
   }
 
   return (
@@ -62,23 +77,44 @@ function CourseStreetMap({ checkpoints }: CheckpointsProps) {
           >
             <Popup>
               <Typography
-                variant="h6"
-                noWrap
                 sx={{
-                  mb: 1,
                   display: "flex",
-                  fontWeight: 700,
                   justifyContent: "center",
                 }}
               >
                 Punto de control {number + 1}
               </Typography>
-              <QRCode
-                value={qr_code}
-                bgColor={"#ffffff"}
-                fgColor={"#000000"}
-                size={200}
-              />
+              {auth ? (
+                <Container
+                  disableGutters
+                  maxWidth={false}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  <QRCode value={qr_code} size={124} id={"qr-code"} />
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    style={{
+                      marginTop: 25,
+                      marginBottom: 5,
+                      fontWeight: 700,
+                      color: "white",
+                    }}
+                    color="primary"
+                    onClick={() => {
+                      downloadQR(number);
+                    }}
+                  >
+                    Descargar QR
+                  </Button>
+                </Container>
+              ) : (
+                <></>
+              )}
             </Popup>
           </Marker>
         ))}
@@ -87,4 +123,4 @@ function CourseStreetMap({ checkpoints }: CheckpointsProps) {
   );
 }
 
-export default CourseStreetMap;
+export default CourseMap;

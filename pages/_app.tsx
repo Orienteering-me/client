@@ -8,12 +8,12 @@ import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import { createContext, useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
-export const TokenContext = createContext("");
+export const TokenContext = createContext<string | null>(null);
 
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
 
-  const [token, setToken] = useState("");
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("orienteering-me-token");
@@ -24,6 +24,8 @@ export default function MyApp(props: AppProps) {
       } else {
         setToken(token);
       }
+    } else {
+      setToken("");
     }
   }, []);
 

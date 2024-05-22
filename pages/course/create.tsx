@@ -60,7 +60,8 @@ export default function NewCourse() {
 
   async function createCourse(event: any) {
     event.preventDefault();
-    const courseNameHasSpecialCharacters = !courseName.match(`^[a-zA-Z0-9]+$`);
+    const courseNameHasSpecialCharacters =
+      !courseName.match(`^[a-zA-Z0-9\ ]+$`);
     setCourseNameHasSpecialCharacters(courseNameHasSpecialCharacters);
     const validNumberOfCheckpoints = checkpoints.length >= 2;
     setValidNumberOfCheckpoints(validNumberOfCheckpoints);
@@ -75,7 +76,7 @@ export default function NewCourse() {
           },
           {
             headers: {
-              "auth-token": token,
+              "auth-token": token!,
             },
           }
         );
@@ -234,8 +235,7 @@ export default function NewCourse() {
             variant="contained"
             fullWidth
             style={{
-              marginTop: 10,
-              marginBottom: 10,
+              marginTop: 5,
               color: "white",
               fontWeight: 700,
             }}

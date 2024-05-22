@@ -30,6 +30,7 @@
     "react-leaflet": "^4.2.1",
     "react-password-strength-bar": "^0.4.1",
     "react-qr-code": "^2.0.12",
+    "react-qrcode-logo": "^2.10.0",
     "universal-cookie": "^7.1.4"
   },
   "devDependencies": {

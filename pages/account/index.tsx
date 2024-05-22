@@ -90,7 +90,7 @@ export default function Account() {
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para acceder a este recurso.");
+        setRequestError("No tienes permisos para realizar esta acción.");
       } else if (error.response.status == 404) {
         setRequestError("La cuenta actual no existe.");
       } else {
@@ -250,7 +250,7 @@ export default function Account() {
         <Button
           variant="outlined"
           style={{
-            marginTop: 15,
+            marginTop: 5,
             fontWeight: 700,
           }}
           href="/account/change_password"
@@ -261,8 +261,7 @@ export default function Account() {
           <Button
             variant="contained"
             style={{
-              marginTop: 15,
-              marginBottom: 5,
+              marginTop: 5,
               color: "white",
               backgroundColor: "red",
               fontWeight: 700,

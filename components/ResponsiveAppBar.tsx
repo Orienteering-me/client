@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { TokenContext } from "../pages/_app";
+import { AuthContext } from "../pages/_app";
 
 const pages = [{ text: "Información", href: "info" }];
 
@@ -31,7 +31,7 @@ const authenticatedMenuItems = [
 ];
 
 function ResponsiveAppBar() {
-  const token = useContext(TokenContext);
+  const auth = useContext(AuthContext);
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -208,7 +208,7 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {Boolean(token)
+              {Boolean(auth.refreshToken)
                 ? authenticatedMenuItems.map((item) => (
                     <MenuItem
                       key={item.text}

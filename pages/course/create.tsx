@@ -10,12 +10,12 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { TokenContext } from "../_app";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
-import ErrorAlert from "../../components/ErrorAlert";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { AuthContext, ErrorContext } from "../_app";
+import { refreshTokens } from "../../hooks/refreshTokens";
 
 const CreateCourseMap = dynamic(
   () => import("../../components/maps/CreateCourseMap"),
@@ -44,13 +44,13 @@ export const CheckpointsContext = createContext<CreateCourseContextType>({
 });
 
 export default function CreateCourse() {
-  const token = useContext(TokenContext);
+  const authContext = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
   const [courseName, setCourseName] = useState("");
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
 
-  const [requestError, setRequestError] = useState("");
   const [courseNameHasSpecialCharacters, setCourseNameHasSpecialCharacters] =
     useState(false);
   const [validNumberOfCheckpoints, setValidNumberOfCheckpoints] =
@@ -74,23 +74,23 @@ export default function CreateCourse() {
           },
           {
             headers: {
-              "auth-token": token!,
+              "Access-Token": authContext.accessToken,
             },
           }
         );
-        if (response.status == 200) {
+        if (response.status == 201) {
           router.push("/course?name=" + courseName);
-        } else {
-          setRequestError(
-            "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-          );
         }
       } catch (error) {
         console.log(error);
-        if (error.response.status == 409) {
-          setRequestError("Ya existe una carrera registrada con este nombre.");
+        if (error.response.status == 401) {
+          throw Error("Permiso denegado.");
+        } else if (error.response.status == 409) {
+          errorContext.setError(
+            "Ya existe una carrera registrada con este nombre."
+          );
         } else {
-          setRequestError(
+          errorContext.setError(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
         }
@@ -98,15 +98,15 @@ export default function CreateCourse() {
     }
   }
 
-  useEffect(() => {}, [token]);
+  useEffect(() => {}, [authContext]);
 
-  if (token == null) {
+  if (authContext.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (authContext.refreshToken == "") {
     return (
       <ForbiddenPage
-        title="No has iniciado sesión"
-        message="Inicia sesión para poder ver esta página"
+        title="No has iniciado sesión o no tienes permiso"
+        message="Quizás la sesión ha caducado. Prueba a iniciar sesión de nuevo."
         button_href="/login"
         button_text="Iniciar sesión"
       />
@@ -122,11 +122,6 @@ export default function CreateCourse() {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: { xs: 12, md: 15 },
@@ -147,7 +142,23 @@ export default function CreateCourse() {
             </Link>
             <Typography color="text.primary">Crear nueva carrera</Typography>
           </Breadcrumbs>
-          <form onSubmit={createCourse} style={{ width: "100%" }}>
+          <form
+            onSubmit={(event) => {
+              createCourse(event).catch(() => {
+                refreshTokens(authContext, errorContext)
+                  .then(() => {
+                    createCourse(event);
+                  })
+                  .catch(() => {
+                    sessionStorage.removeItem("orienteering-me-access-token");
+                    localStorage.removeItem("orienteering-me-refresh-token");
+                    authContext.setAccessToken("");
+                    authContext.setRefreshToken("");
+                  });
+              });
+            }}
+            style={{ width: "100%" }}
+          >
             <Typography
               variant="h4"
               sx={{

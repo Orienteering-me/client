@@ -6,26 +6,51 @@ import "../styles/globals.css";
 import theme from "../components/theme";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import { createContext, useEffect, useState } from "react";
-import { jwtDecode } from "jwt-decode";
+import ErrorAlert from "../components/ErrorAlert";
 
-export const TokenContext = createContext<string | null>(null);
+type AuthContextType = {
+  refreshToken: string | null;
+  setRefreshToken: (refreshToken: string | null) => void;
+  accessToken: string | null;
+  setAccessToken: (accessToken: string | null) => void;
+};
+
+export const AuthContext = createContext<AuthContextType>({
+  refreshToken: null,
+  setRefreshToken: () => {},
+  accessToken: null,
+  setAccessToken: () => {},
+});
+
+type ErrorContextType = {
+  error: string;
+  setError: (error: string) => void;
+};
+
+export const ErrorContext = createContext<ErrorContextType>({
+  error: "",
+  setError: () => {},
+});
 
 export default function MyApp(props: AppProps) {
   const { Component, pageProps } = props;
 
-  const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const token = localStorage.getItem("orienteering-me-token");
-    if (token) {
-      if (jwtDecode(token).exp! * 1000 < new Date().getTime()) {
-        localStorage.removeItem("orienteering-me-token");
-        setToken("");
-      } else {
-        setToken(token);
-      }
+    const refreshToken = localStorage.getItem("orienteering-me-refresh-token");
+    if (refreshToken) {
+      setRefreshToken(refreshToken);
     } else {
-      setToken("");
+      setRefreshToken("");
+    }
+    const accessToken = sessionStorage.getItem("orienteering-me-access-token");
+    if (accessToken) {
+      setAccessToken(accessToken);
+    } else {
+      setAccessToken("");
     }
   }, []);
 
@@ -37,6 +62,11 @@ export default function MyApp(props: AppProps) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Container maxWidth={false} disableGutters>
+          <ErrorAlert
+            open={Boolean(error)}
+            error={error}
+            onClose={() => setError("")}
+          />
           <Box
             sx={{
               display: "flex",
@@ -45,10 +75,19 @@ export default function MyApp(props: AppProps) {
               alignItems: "center",
             }}
           >
-            <TokenContext.Provider value={token}>
-              <ResponsiveAppBar></ResponsiveAppBar>
-              <Component {...pageProps} />
-            </TokenContext.Provider>
+            <ErrorContext.Provider value={{ error, setError }}>
+              <AuthContext.Provider
+                value={{
+                  refreshToken,
+                  setRefreshToken,
+                  accessToken,
+                  setAccessToken,
+                }}
+              >
+                <ResponsiveAppBar></ResponsiveAppBar>
+                <Component {...pageProps} />
+              </AuthContext.Provider>
+            </ErrorContext.Provider>
           </Box>
         </Container>
       </ThemeProvider>

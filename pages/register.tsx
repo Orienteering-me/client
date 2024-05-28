@@ -21,11 +21,11 @@ import axios from "axios";
 import bcrypt from "bcryptjs";
 import ErrorAlert from "../components/ErrorAlert";
 import LoadingBox from "../components/LoadingBox";
-import { TokenContext } from "./_app";
-import ForbiddenPage from "../components/ForbiddenPage";
+import { AuthContext, ErrorContext } from "./_app";
 
 export default function Register() {
-  const token = useContext(TokenContext);
+  const auth = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
   const [userData, setUserData] = useState({
@@ -44,7 +44,6 @@ export default function Register() {
   const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
   const [wrongPasswordFormat, setWrongPasswordFormat] = useState(false);
   const [repeatedPasswordError, setRepeatedPasswordError] = useState(false);
-  const [requestError, setRequestError] = useState("");
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -88,7 +87,7 @@ export default function Register() {
       try {
         const hashedPassword = await bcrypt.hash(userData.password, 10);
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URI}/users`,
+          `${process.env.NEXT_PUBLIC_API_URI}/register`,
           {
             email: userData.email,
             name: userData.name,
@@ -100,19 +99,15 @@ export default function Register() {
         if (response.status == 201) {
           alert("Te has registrado correctamente.");
           router.push("/login");
-        } else {
-          setRequestError(
-            "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-          );
         }
       } catch (error) {
         console.log(error);
         if (error.response.status == 409) {
-          setRequestError(
+          errorContext.setError(
             "Ya existe una cuenta registrada con esta dirección de correo."
           );
         } else {
-          setRequestError(
+          errorContext.setError(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
         }
@@ -120,11 +115,15 @@ export default function Register() {
     }
   }
 
-  useEffect(() => {}, [token]);
+  useEffect(() => {
+    if (auth.refreshToken != "" && auth.refreshToken != null) {
+      router.push("/");
+    }
+  }, [auth]);
 
-  if (token == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (auth.refreshToken == "") {
     return (
       <Container
         maxWidth={false}
@@ -135,11 +134,6 @@ export default function Register() {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: { xs: 12, md: 15 },
@@ -369,13 +363,6 @@ export default function Register() {
       </Container>
     );
   } else {
-    return (
-      <ForbiddenPage
-        title="Ya tienes una sesión iniciada"
-        message="Para registrar una nueva cuenta, primero cierra la sesión actual"
-        button_href="/logout"
-        button_text="Cerrar sesión"
-      />
-    );
+    return <LoadingBox />;
   }
 }

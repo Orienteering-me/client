@@ -12,11 +12,9 @@ import axios from "axios";
 import Link from "next/link";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
-import { TokenContext } from "../_app";
+import { AuthContext, ErrorContext } from "../_app";
 import { useRouter } from "next/router";
-import ErrorAlert from "../../components/ErrorAlert";
-
-// TODO Cambiar Contraseña
+import { refreshTokens } from "../../hooks/refreshTokens";
 
 interface UserData {
   email: string;
@@ -24,8 +22,9 @@ interface UserData {
   phone_number: string;
 }
 
-export default function Account() {
-  const token = useContext(TokenContext);
+export default function EditAccount() {
+  const authContext = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -33,33 +32,27 @@ export default function Account() {
   const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
   const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
 
-  const [requestError, setRequestError] = useState("");
-
   async function getUserData() {
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "auth-token": token,
+            "Access-Token": authContext.accessToken,
           },
         }
       );
       if (response.status == 200) {
         setUserData(response.data);
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para acceder a este recurso.");
+        throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        setRequestError("La cuenta actual no existe.");
+        errorContext.setError("La cuenta actual no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -85,28 +78,24 @@ export default function Account() {
           userData,
           {
             headers: {
-              "auth-token": token,
+              "Access-Token": authContext.accessToken,
             },
           }
         );
-
         if (response.status == 200) {
           alert("La información de la cuenta se ha actualizado correctamente.");
-          localStorage.setItem("orienteering-me-token", response.data.token);
           router.push("/account");
-        } else {
-          setRequestError(
-            "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-          );
         }
       } catch (error) {
         console.log(error);
-        if (error.response.status == 409) {
-          setRequestError(
+        if (error.response.status == 401) {
+          throw Error("Permiso denegado.");
+        } else if (error.response.status == 409) {
+          errorContext.setError(
             "Ya existe una cuenta registrada con esta dirección de correo."
           );
         } else {
-          setRequestError(
+          errorContext.setError(
             "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
           );
         }
@@ -115,18 +104,25 @@ export default function Account() {
   }
 
   useEffect(() => {
-    if (token) {
-      getUserData();
+    if (authContext.refreshToken) {
+      getUserData().catch(() => {
+        refreshTokens(authContext, errorContext).catch(() => {
+          sessionStorage.removeItem("orienteering-me-access-token");
+          localStorage.removeItem("orienteering-me-refresh-token");
+          authContext.setAccessToken("");
+          authContext.setRefreshToken("");
+        });
+      });
     }
-  }, [token]);
+  }, [authContext]);
 
-  if (token == null) {
+  if (authContext.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (authContext.refreshToken == "") {
     return (
       <ForbiddenPage
-        title="No has iniciado sesión"
-        message="Inicia sesión para poder ver esta página"
+        title="No has iniciado sesión o no tienes permiso"
+        message="Quizás la sesión ha caducado. Prueba a iniciar sesión de nuevo."
         button_href="/login"
         button_text="Iniciar sesión"
       />
@@ -142,11 +138,6 @@ export default function Account() {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: { xs: 12, md: 20 },
@@ -170,7 +161,23 @@ export default function Account() {
             </Link>
             <Typography color="text.primary">Editar cuenta</Typography>
           </Breadcrumbs>
-          <form onSubmit={patchAccount} style={{ width: "100%" }}>
+          <form
+            onSubmit={(event) => {
+              patchAccount(event).catch(() => {
+                refreshTokens(authContext, errorContext)
+                  .then(() => {
+                    patchAccount(event);
+                  })
+                  .catch(() => {
+                    sessionStorage.removeItem("orienteering-me-access-token");
+                    localStorage.removeItem("orienteering-me-refresh-token");
+                    authContext.setAccessToken("");
+                    authContext.setRefreshToken("");
+                  });
+              });
+            }}
+            style={{ width: "100%" }}
+          >
             <Typography
               variant="h4"
               noWrap
@@ -325,11 +332,6 @@ export default function Account() {
         disableGutters
       >
         <LoadingBox />
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
       </Container>
     );
   }

@@ -3,8 +3,8 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import { useContext, useEffect, useState } from "react";
 import LoadingBox from "../components/LoadingBox";
-import ErrorAlert from "../components/ErrorAlert";
-import { TokenContext } from "./_app";
+import { AuthContext, ErrorContext } from "./_app";
+import { refreshTokens } from "../hooks/refreshTokens";
 
 const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
@@ -26,65 +26,63 @@ interface CoursesProps {
 }
 
 export default function Main() {
-  const token = useContext(TokenContext);
+  const authContext = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
 
   const [courses, setCourses] = useState<CoursesProps[] | null>(null);
 
-  const [requestError, setRequestError] = useState("");
-
-  async function getData() {
-    if (token) {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URI}/courses`,
-          {
-            headers: {
-              "auth-token": token,
-            },
-          }
+  async function getCourseData() {
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URI}/courses`,
+        {
+          headers: {
+            "Access-Token": authContext.accessToken,
+          },
+        }
+      );
+      if (response.status == 200) {
+        setCourses(
+          response.data.map((course: APICourse) => {
+            return {
+              name: course.name,
+              admin: course.admin.name,
+              lat: course.checkpoints[0].lat,
+              lng: course.checkpoints[0].lng,
+            };
+          })
         );
-        if (response.status == 200) {
-          setCourses(
-            response.data.map((course: APICourse) => {
-              return {
-                name: course.name,
-                admin: course.admin.name,
-                lat: course.checkpoints[0].lat,
-                lng: course.checkpoints[0].lng,
-              };
-            })
-          );
-        } else {
-          setRequestError(
-            "Ha ocurrido un error inesperado cargando las carreras disponibles."
-          );
-        }
-      } catch (error) {
-        if (error.response.status == 401) {
-          setRequestError(
-            "No tienes permisos para acceder a este recurso. Pruebe a volver a iniciar sesión."
-          );
-          console.log(error);
-        } else if (error.response.status == 404) {
-        } else {
-          setRequestError(
-            "Ha ocurrido un error inesperado cargando las carreras disponibles."
-          );
-          console.log(error);
-        }
+      }
+    } catch (error) {
+      console.log(error);
+      if (error.response.status == 401) {
+        throw Error("Permiso denegado.");
+      } else if (error.response.status == 404) {
+        setCourses([]);
+      } else {
+        errorContext.setError(
+          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+        );
       }
     }
   }
 
   useEffect(() => {
-    if (token) {
-      getData();
+    if (authContext.refreshToken) {
+      getCourseData().catch(() => {
+        refreshTokens(authContext, errorContext).catch(() => {
+          sessionStorage.removeItem("orienteering-me-access-token");
+          localStorage.removeItem("orienteering-me-refresh-token");
+          authContext.setAccessToken("");
+          authContext.setRefreshToken("");
+        });
+      });
     }
-  }, [token]);
+  }, [authContext]);
 
-  if (token == null) {
+  if (authContext.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (authContext.refreshToken == "") {
     return (
       <Box
         sx={{
@@ -172,32 +170,10 @@ export default function Main() {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <MainPageMap courses={courses} />
       </Container>
     );
   } else {
-    return (
-      <Container
-        maxWidth={false}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-        disableGutters
-      >
-        <LoadingBox />
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
-      </Container>
-    );
+    return <LoadingBox />;
   }
 }

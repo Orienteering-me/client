@@ -1,32 +1,64 @@
 import { useContext, useEffect, useState } from "react";
 import { Box, Button, Container, Typography } from "@mui/material";
-import { TokenContext } from "./_app";
+import { AuthContext, ErrorContext } from "./_app";
 import LoadingBox from "../components/LoadingBox";
 import ForbiddenPage from "../components/ForbiddenPage";
+import axios from "axios";
 
 export default function Logout() {
-  const token = useContext(TokenContext);
+  const auth = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
 
   const [loggedOut, setLoggedOut] = useState<Boolean | null>(null);
 
+  async function logout() {
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URI}/logout`,
+        {},
+        {
+          headers: {
+            "Refresh-Token": auth.refreshToken,
+          },
+        }
+      );
+      if (response.status == 200) {
+        sessionStorage.removeItem("orienteering-me-access-token");
+        localStorage.removeItem("orienteering-me-refresh-token");
+        setLoggedOut(true);
+      }
+    } catch (error) {
+      console.log(error);
+      // The error is only showed if the error was a server error
+      if (error.response.status == 500) {
+        errorContext.setError(
+          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
+        );
+      } else {
+        sessionStorage.removeItem("orienteering-me-access-token");
+        localStorage.removeItem("orienteering-me-refresh-token");
+        setLoggedOut(true);
+      }
+    }
+  }
+
   useEffect(() => {
     // Runs only the first time the page is loaded
-    if (loggedOut == null && token != null) {
-      if (token != "") {
-        localStorage.removeItem("orienteering-me-token");
-        setLoggedOut(true);
+    if (loggedOut == null && auth.refreshToken != null) {
+      if (auth.refreshToken != "") {
+        logout();
       } else {
         setLoggedOut(false);
       }
     }
-  }, [token]);
+  }, [auth]);
 
-  if (token == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (!loggedOut) {
+  } else if (loggedOut == false) {
     return (
       <ForbiddenPage
-        title="No has iniciado sesión"
+        title="No has iniciado sesión o no tienes permiso"
         message="No puedes cerrar sesión sin iniciar sesión previamente"
         button_href="/login"
         button_text="Iniciar sesión"

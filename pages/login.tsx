@@ -17,20 +17,17 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import LoadingBox from "../components/LoadingBox";
-import ErrorAlert from "../components/ErrorAlert";
-import { TokenContext } from "./_app";
-import ForbiddenPage from "../components/ForbiddenPage";
+import { AuthContext, ErrorContext } from "./_app";
 
 export default function Login() {
-  const token = useContext(TokenContext);
+  const auth = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [requestError, setRequestError] = useState("");
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -51,34 +48,40 @@ export default function Login() {
           password: password,
         }
       );
-
       if (response.status == 200) {
-        localStorage.setItem("orienteering-me-token", response.data.token);
-        router.push("/");
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
+        localStorage.setItem(
+          "orienteering-me-refresh-token",
+          response.data.refresh_token
         );
+        sessionStorage.setItem(
+          "orienteering-me-access-token",
+          response.data.access_token
+        );
+        router.push("/");
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("La contraseña introducida es incorrecta.");
+        errorContext.setError("La contraseña introducida es incorrecta.");
       } else if (error.response.status == 404) {
-        setRequestError("La cuenta introducida no existe.");
+        errorContext.setError("La cuenta introducida no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
     }
   }
 
-  useEffect(() => {}, [token]);
+  useEffect(() => {
+    if (auth.refreshToken != "" && auth.refreshToken != null) {
+      router.push("/");
+    }
+  }, [auth]);
 
-  if (token == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (auth.refreshToken == "") {
     return (
       <Container
         maxWidth={false}
@@ -89,11 +92,6 @@ export default function Login() {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: 20,
@@ -191,13 +189,6 @@ export default function Login() {
       </Container>
     );
   } else {
-    return (
-      <ForbiddenPage
-        title="Ya tienes una sesión iniciada"
-        message="Para iniciar sesión con otra cuenta, primero cierra la sesión actual"
-        button_href="/logout"
-        button_text="Cerrar sesión"
-      />
-    );
+    return <LoadingBox />;
   }
 }

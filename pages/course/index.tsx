@@ -13,12 +13,12 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import dynamic from "next/dynamic";
-import { TokenContext } from "../_app";
 import ForbiddenPage from "../../components/ForbiddenPage";
 import LoadingBox from "../../components/LoadingBox";
-import ErrorAlert from "../../components/ErrorAlert";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { AuthContext, ErrorContext } from "../_app";
+import { refreshTokens } from "../../hooks/refreshTokens";
 
 const ViewCourseMap = dynamic(
   () => import("../../components/maps/ViewCourseMap"),
@@ -42,28 +42,25 @@ interface CourseData {
 }
 
 export default function Course({ name }: any) {
-  const token = useContext(TokenContext);
+  const authContext = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
   const router = useRouter();
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const [requestError, setRequestError] = useState("");
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const [userIsAdmin, setUserIsAdmin] = useState<boolean | null>(null);
   const [courseData, setCourseData] = useState<CourseData | null>(null);
 
   async function getCourseData() {
-    const token = localStorage.getItem("orienteering-me-token");
-
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
-            "auth-token": token,
+            "Access-Token": authContext.accessToken,
           },
         }
       );
-
       if (response.status == 200) {
         setUserIsAdmin(response.data.is_admin);
         setCourseData({
@@ -71,19 +68,15 @@ export default function Course({ name }: any) {
           admin: response.data.course.admin.name,
           checkpoints: response.data.course.checkpoints,
         });
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para acceder a este recurso.");
+        throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        setRequestError("Esta carrera no existe.");
+        errorContext.setError("Esta carrera no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -91,13 +84,12 @@ export default function Course({ name }: any) {
   }
 
   async function deleteCourse() {
-    setOpenDeleteDialog(false);
     try {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + courseData!.name,
         {
           headers: {
-            "auth-token": token!,
+            "Access-Token": authContext.accessToken,
           },
         }
       );
@@ -105,19 +97,15 @@ export default function Course({ name }: any) {
       if (response.status == 200) {
         alert("La carrera ha sido eliminada correctamente.");
         router.push("/");
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para realizar esta acción.");
+        throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        setRequestError("Esta carrera no existe.");
+        errorContext.setError("Esta carrera no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -125,18 +113,25 @@ export default function Course({ name }: any) {
   }
 
   useEffect(() => {
-    if (token) {
-      getCourseData();
+    if (authContext.refreshToken) {
+      getCourseData().catch(() => {
+        refreshTokens(authContext, errorContext).catch(() => {
+          sessionStorage.removeItem("orienteering-me-access-token");
+          localStorage.removeItem("orienteering-me-refresh-token");
+          authContext.setAccessToken("");
+          authContext.setRefreshToken("");
+        });
+      });
     }
-  }, [token]);
+  }, [authContext]);
 
-  if (token == null) {
+  if (authContext.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (authContext.refreshToken == "") {
     return (
       <ForbiddenPage
-        title="No has iniciado sesión"
-        message="Inicia sesión para poder ver esta página"
+        title="No has iniciado sesión o no tienes permiso"
+        message="Quizás la sesión ha caducado. Prueba a iniciar sesión de nuevo."
         button_href="/login"
         button_text="Iniciar sesión"
       />
@@ -152,11 +147,6 @@ export default function Course({ name }: any) {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: { xs: 12, md: 15 },
@@ -289,7 +279,25 @@ export default function Course({ name }: any) {
                       color: "white",
                       backgroundColor: "red",
                     }}
-                    onClick={deleteCourse}
+                    onClick={() => {
+                      setOpenDeleteDialog(false);
+                      deleteCourse().catch(() => {
+                        refreshTokens(authContext, errorContext)
+                          .then(() => {
+                            deleteCourse();
+                          })
+                          .catch(() => {
+                            sessionStorage.removeItem(
+                              "orienteering-me-access-token"
+                            );
+                            localStorage.removeItem(
+                              "orienteering-me-refresh-token"
+                            );
+                            authContext.setAccessToken("");
+                            authContext.setRefreshToken("");
+                          });
+                      });
+                    }}
                   >
                     Aceptar
                   </Button>
@@ -315,24 +323,7 @@ export default function Course({ name }: any) {
       </Container>
     );
   } else {
-    return (
-      <Container
-        maxWidth={false}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-        disableGutters
-      >
-        <LoadingBox />
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
-      </Container>
-    );
+    return <LoadingBox />;
   }
 }
 

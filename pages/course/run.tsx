@@ -11,12 +11,13 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { TokenContext } from "../_app";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
 import ErrorAlert from "../../components/ErrorAlert";
 import Link from "next/link";
 import { UploadImageCard } from "../../components/UploadImageCard";
+import { AuthContext, ErrorContext } from "../_app";
+import { refreshTokens } from "../../hooks/refreshTokens";
 
 interface Checkpoint {
   _id: string;
@@ -56,27 +57,21 @@ export const ImagesDataContext = createContext<ImagesDataContextType>({
 });
 
 export default function RunCourse({ name }: any) {
-  const token = useContext(TokenContext);
-  const router = useRouter();
+  const authContext = useContext(AuthContext);
+  const errorContext = useContext(ErrorContext);
 
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [qrCodes, setQrCodes] = useState<(string | null)[]>([]);
   const [locations, setLocations] = useState<(Location | null)[]>([]);
   const [dates, setDates] = useState<(Date | null)[]>([]);
 
-  const [loaded, setLoaded] = useState(false);
-
-  const [requestError, setRequestError] = useState("");
-  useState(false);
-
   async function getData() {
-    const token = localStorage.getItem("orienteering-me-token");
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
-            "auth-token": token,
+            "Access-Token": authContext.accessToken,
           },
         }
       );
@@ -93,19 +88,15 @@ export default function RunCourse({ name }: any) {
         setQrCodes(imagesDataInit);
         setDates(imagesDataInit);
         setLocations(imagesDataInit);
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para acceder a este recurso.");
+        throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        setRequestError("Esta carrera no existe.");
+        errorContext.setError("Esta carrera no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -113,7 +104,6 @@ export default function RunCourse({ name }: any) {
   }
 
   async function sendQrs() {
-    const token = localStorage.getItem("orienteering-me-token");
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URI}/stats`,
@@ -123,7 +113,7 @@ export default function RunCourse({ name }: any) {
         },
         {
           headers: {
-            "auth-token": token,
+            "Access-Token": authContext.accessToken,
           },
         }
       );
@@ -138,19 +128,15 @@ export default function RunCourse({ name }: any) {
           return null;
         });
         setQrCodes(qrCodesInit);
-      } else {
-        setRequestError(
-          "Ha ocurrido un error inesperado. Por favor, inténtelo más tarde."
-        );
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        setRequestError("No tienes permisos para acceder a este recurso.");
+        throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        setRequestError("Esta carrera no existe.");
+        errorContext.setError("Esta carrera no existe.");
       } else {
-        setRequestError(
+        errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -158,21 +144,25 @@ export default function RunCourse({ name }: any) {
   }
 
   useEffect(() => {
-    if (token) {
-      getData();
-      setLoaded(true);
-    } else {
-      setLoaded(true);
+    if (authContext.refreshToken) {
+      getData().catch(() => {
+        refreshTokens(authContext, errorContext).catch(() => {
+          sessionStorage.removeItem("orienteering-me-access-token");
+          localStorage.removeItem("orienteering-me-refresh-token");
+          authContext.setAccessToken("");
+          authContext.setRefreshToken("");
+        });
+      });
     }
-  }, [token]);
+  }, [authContext]);
 
-  if (token == null) {
+  if (authContext.refreshToken == null) {
     return <LoadingBox />;
-  } else if (token.length == 0) {
+  } else if (authContext.refreshToken == "") {
     return (
       <ForbiddenPage
-        title="No has iniciado sesión"
-        message="Inicia sesión para poder ver esta página"
+        title="No has iniciado sesión o no tienes permiso"
+        message="Quizás la sesión ha caducado. Prueba a iniciar sesión de nuevo."
         button_href="/login"
         button_text="Iniciar sesión"
       />
@@ -188,11 +178,6 @@ export default function RunCourse({ name }: any) {
         }}
         disableGutters
       >
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
         <Box
           sx={{
             mt: { xs: 12, md: 15 },
@@ -307,24 +292,7 @@ export default function RunCourse({ name }: any) {
       </Container>
     );
   } else {
-    return (
-      <Container
-        maxWidth={false}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-        disableGutters
-      >
-        <LoadingBox />
-        <ErrorAlert
-          open={Boolean(requestError)}
-          error={requestError}
-          onClose={() => setRequestError("")}
-        />
-      </Container>
-    );
+    return <LoadingBox />;
   }
 }
 

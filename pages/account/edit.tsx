@@ -164,16 +164,7 @@ export default function EditAccount() {
           <form
             onSubmit={(event) => {
               patchAccount(event).catch(() => {
-                refreshTokens(authContext, errorContext)
-                  .then(() => {
-                    patchAccount(event);
-                  })
-                  .catch(() => {
-                    sessionStorage.removeItem("orienteering-me-access-token");
-                    localStorage.removeItem("orienteering-me-refresh-token");
-                    authContext.setAccessToken("");
-                    authContext.setRefreshToken("");
-                  });
+                window.location.reload();
               });
             }}
             style={{ width: "100%" }}

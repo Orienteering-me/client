@@ -144,16 +144,7 @@ export default function CreateCourse() {
           <form
             onSubmit={(event) => {
               createCourse(event).catch(() => {
-                refreshTokens(authContext, errorContext)
-                  .then(() => {
-                    createCourse(event);
-                  })
-                  .catch(() => {
-                    sessionStorage.removeItem("orienteering-me-access-token");
-                    localStorage.removeItem("orienteering-me-refresh-token");
-                    authContext.setAccessToken("");
-                    authContext.setRefreshToken("");
-                  });
+                window.location.reload();
               });
             }}
             style={{ width: "100%" }}

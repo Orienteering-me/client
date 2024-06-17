@@ -256,12 +256,7 @@ export default function RunCourse({ course }: any) {
           <form
             onSubmit={(event) => {
               sendImages(event).catch(() => {
-                refreshTokens(authContext, errorContext).catch((error) => {
-                  sessionStorage.removeItem("orienteering-me-access-token");
-                  localStorage.removeItem("orienteering-me-refresh-token");
-                  authContext.setAccessToken("");
-                  authContext.setRefreshToken("");
-                });
+                window.location.reload();
               });
             }}
             style={{ width: "100%" }}

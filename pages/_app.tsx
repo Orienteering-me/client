@@ -58,6 +58,7 @@ export default function MyApp(props: AppProps) {
     <AppCacheProvider {...props}>
       <Head>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <title>Orienteering.me</title>
       </Head>
       <ThemeProvider theme={theme}>
         <CssBaseline />

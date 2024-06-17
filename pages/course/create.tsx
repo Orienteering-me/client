@@ -51,20 +51,19 @@ export default function CreateCourse() {
   const [courseName, setCourseName] = useState("");
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
 
-  const [courseNameHasSpecialCharacters, setCourseNameHasSpecialCharacters] =
+  const [courseNameHasForbiddenCharacter, setCourseNameHasForbiddenCharacter] =
     useState(false);
   const [validNumberOfCheckpoints, setValidNumberOfCheckpoints] =
     useState(true);
 
   async function createCourse(event: any) {
     event.preventDefault();
-    const courseNameHasSpecialCharacters =
-      !courseName.match(`^[a-zA-Z0-9\ ]+$`);
-    setCourseNameHasSpecialCharacters(courseNameHasSpecialCharacters);
+    const courseNameHasForbiddenCharacter = courseName.includes("&");
+    setCourseNameHasForbiddenCharacter(courseNameHasForbiddenCharacter);
     const validNumberOfCheckpoints = checkpoints.length >= 2;
     setValidNumberOfCheckpoints(validNumberOfCheckpoints);
 
-    if (!courseNameHasSpecialCharacters && validNumberOfCheckpoints) {
+    if (!courseNameHasForbiddenCharacter && validNumberOfCheckpoints) {
       try {
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URI}/courses`,
@@ -180,14 +179,13 @@ export default function CreateCourse() {
               margin="normal"
               onChange={(e) => setCourseName(e.target.value)}
             />
-            {courseNameHasSpecialCharacters ? (
+            {courseNameHasForbiddenCharacter ? (
               <Alert
                 variant="filled"
                 severity="error"
                 style={{ marginBottom: 20 }}
               >
-                El nombre de una carrera no puede contener caracteres
-                especiales.
+                El nombre de una carrera no puede contener el caracter "&".
               </Alert>
             ) : (
               <></>

@@ -84,7 +84,7 @@ function ViewCourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
               >
                 Punto de control {number + 1}
               </Typography>
-              {auth ? (
+              {qr_code != null ? (
                 <Container
                   disableGutters
                   maxWidth={false}
@@ -94,7 +94,12 @@ function ViewCourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
                     alignItems: "center",
                   }}
                 >
-                  <QRCode value={qr_code} size={124} id={"qr-code"} />
+                  <QRCode
+                    value={qr_code}
+                    size={200}
+                    id={"qr-code"}
+                    ecLevel={"Q"}
+                  />
                   <Button
                     variant="contained"
                     fullWidth

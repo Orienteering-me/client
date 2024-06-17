@@ -215,107 +215,107 @@ export default function Course({ name }: any) {
             )}
             auth={userIsAdmin}
           />
+          <Button
+            variant="outlined"
+            style={{
+              marginTop: 20,
+              fontWeight: 700,
+            }}
+            href={"/course/results?course=" + name}
+          >
+            Ver resultados
+          </Button>
           {userIsAdmin ? (
-            <Button
-              variant="outlined"
-              style={{
-                marginTop: 25,
-                fontWeight: 700,
-              }}
-              href={"/course/edit?name=" + name}
-            >
-              Editar carrera
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              style={{
-                marginTop: 25,
-                fontWeight: 700,
-                color: "white",
-              }}
-              href={"/course/run?name=" + name}
-            >
-              Subir resultados
-            </Button>
-          )}
-          {userIsAdmin ? (
-            <Fragment>
+            <div>
               <Button
-                variant="contained"
+                fullWidth
+                variant="outlined"
                 style={{
                   marginTop: 5,
-                  color: "white",
-                  backgroundColor: "red",
                   fontWeight: 700,
                 }}
-                onClick={() => {
-                  setOpenDeleteDialog(true);
-                }}
+                href={"/course/edit?name=" + name}
               >
-                Borrar carrera
+                Editar carrera
               </Button>
-              <Dialog
-                open={openDeleteDialog}
-                onClose={() => {
-                  setOpenDeleteDialog(false);
-                }}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-              >
-                <DialogTitle id="alert-dialog-title">
-                  ¿Está seguro de que quiere borrar esta carrera?
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText id="alert-dialog-description">
-                    Esta acción no se puede deshacer
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button
-                    variant="contained"
-                    style={{
-                      marginBottom: 5,
-                      color: "white",
-                      backgroundColor: "red",
-                    }}
-                    onClick={() => {
-                      setOpenDeleteDialog(false);
-                      deleteCourse().catch(() => {
-                        refreshTokens(authContext, errorContext)
-                          .then(() => {
-                            deleteCourse();
-                          })
-                          .catch(() => {
-                            sessionStorage.removeItem(
-                              "orienteering-me-access-token"
-                            );
-                            localStorage.removeItem(
-                              "orienteering-me-refresh-token"
-                            );
-                            authContext.setAccessToken("");
-                            authContext.setRefreshToken("");
-                          });
-                      });
-                    }}
-                  >
-                    Aceptar
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    style={{
-                      marginBottom: 5,
-                    }}
-                    onClick={() => {
-                      setOpenDeleteDialog(false);
-                    }}
-                    autoFocus
-                  >
-                    Cancelar
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Fragment>
+              <Fragment>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  style={{
+                    marginTop: 5,
+                    color: "white",
+                    backgroundColor: "red",
+                    fontWeight: 700,
+                  }}
+                  onClick={() => {
+                    setOpenDeleteDialog(true);
+                  }}
+                >
+                  Borrar carrera
+                </Button>
+                <Dialog
+                  open={openDeleteDialog}
+                  onClose={() => {
+                    setOpenDeleteDialog(false);
+                  }}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                >
+                  <DialogTitle id="alert-dialog-title">
+                    ¿Está seguro de que quiere borrar esta carrera?
+                  </DialogTitle>
+                  <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                      Esta acción no se puede deshacer
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      variant="contained"
+                      style={{
+                        marginBottom: 5,
+                        color: "white",
+                        backgroundColor: "red",
+                      }}
+                      onClick={() => {
+                        setOpenDeleteDialog(false);
+                        deleteCourse().catch(() => {
+                          refreshTokens(authContext, errorContext)
+                            .then(() => {
+                              deleteCourse();
+                            })
+                            .catch(() => {
+                              sessionStorage.removeItem(
+                                "orienteering-me-access-token"
+                              );
+                              localStorage.removeItem(
+                                "orienteering-me-refresh-token"
+                              );
+                              authContext.setAccessToken("");
+                              authContext.setRefreshToken("");
+                            });
+                        });
+                      }}
+                    >
+                      Aceptar
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      style={{
+                        marginBottom: 5,
+                      }}
+                      onClick={() => {
+                        setOpenDeleteDialog(false);
+                      }}
+                      autoFocus
+                    >
+                      Cancelar
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+              </Fragment>
+            </div>
           ) : (
             <></>
           )}

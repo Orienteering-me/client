@@ -152,12 +152,7 @@ export default function RunCourse({ course }: any) {
   useEffect(() => {
     if (authContext.refreshToken) {
       getData().catch(() => {
-        refreshTokens(authContext, errorContext).catch(() => {
-          sessionStorage.removeItem("orienteering-me-access-token");
-          localStorage.removeItem("orienteering-me-refresh-token");
-          authContext.setAccessToken("");
-          authContext.setRefreshToken("");
-        });
+        refreshTokens(authContext, errorContext);
       });
     }
   }, [authContext]);

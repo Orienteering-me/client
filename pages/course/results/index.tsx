@@ -96,12 +96,7 @@ export default function Course({ course }: any) {
   useEffect(() => {
     if (authContext.refreshToken) {
       getRanking().catch(() => {
-        refreshTokens(authContext, errorContext).catch(() => {
-          sessionStorage.removeItem("orienteering-me-access-token");
-          localStorage.removeItem("orienteering-me-refresh-token");
-          authContext.setAccessToken("");
-          authContext.setRefreshToken("");
-        });
+        refreshTokens(authContext, errorContext);
       });
     }
   }, [authContext]);

@@ -70,12 +70,7 @@ export default function Main() {
   useEffect(() => {
     if (authContext.refreshToken) {
       getCourseData().catch(() => {
-        refreshTokens(authContext, errorContext).catch(() => {
-          sessionStorage.removeItem("orienteering-me-access-token");
-          localStorage.removeItem("orienteering-me-refresh-token");
-          authContext.setAccessToken("");
-          authContext.setRefreshToken("");
-        });
+        refreshTokens(authContext, errorContext);
       });
     }
   }, [authContext]);

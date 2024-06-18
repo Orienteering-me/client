@@ -115,12 +115,7 @@ export default function Course({ name }: any) {
   useEffect(() => {
     if (authContext.refreshToken) {
       getCourseData().catch(() => {
-        refreshTokens(authContext, errorContext).catch(() => {
-          sessionStorage.removeItem("orienteering-me-access-token");
-          localStorage.removeItem("orienteering-me-refresh-token");
-          authContext.setAccessToken("");
-          authContext.setRefreshToken("");
-        });
+        refreshTokens(authContext, errorContext);
       });
     }
   }, [authContext]);
@@ -281,20 +276,7 @@ export default function Course({ name }: any) {
                       onClick={() => {
                         setOpenDeleteDialog(false);
                         deleteCourse().catch(() => {
-                          refreshTokens(authContext, errorContext)
-                            .then(() => {
-                              deleteCourse();
-                            })
-                            .catch(() => {
-                              sessionStorage.removeItem(
-                                "orienteering-me-access-token"
-                              );
-                              localStorage.removeItem(
-                                "orienteering-me-refresh-token"
-                              );
-                              authContext.setAccessToken("");
-                              authContext.setRefreshToken("");
-                            });
+                          refreshTokens(authContext, errorContext);
                         });
                       }}
                     >

@@ -95,12 +95,7 @@ export default function Account() {
   useEffect(() => {
     if (authContext.refreshToken) {
       getUserData().catch(() => {
-        refreshTokens(authContext, errorContext).catch(() => {
-          sessionStorage.removeItem("orienteering-me-access-token");
-          localStorage.removeItem("orienteering-me-refresh-token");
-          authContext.setAccessToken("");
-          authContext.setRefreshToken("");
-        });
+        refreshTokens(authContext, errorContext);
       });
     }
   }, [authContext]);
@@ -224,7 +219,7 @@ export default function Account() {
               fontWeight: 500,
             }}
           >
-            {userData.phone_number}
+            {Boolean(userData.phone_number) ? userData.phone_number : "-"}
           </Typography>
           <Button
             variant="outlined"
@@ -242,7 +237,7 @@ export default function Account() {
               marginTop: 5,
               fontWeight: 700,
             }}
-            href="/account/change_password"
+            href="/account/password"
           >
             Cambiar contraseña
           </Button>
@@ -288,20 +283,7 @@ export default function Account() {
                   onClick={() => {
                     setOpenDeleteDialog(false);
                     deleteUser().catch(() => {
-                      refreshTokens(authContext, errorContext)
-                        .then(() => {
-                          deleteUser();
-                        })
-                        .catch(() => {
-                          sessionStorage.removeItem(
-                            "orienteering-me-access-token"
-                          );
-                          localStorage.removeItem(
-                            "orienteering-me-refresh-token"
-                          );
-                          authContext.setAccessToken("");
-                          authContext.setRefreshToken("");
-                        });
+                      refreshTokens(authContext, errorContext);
                     });
                   }}
                 >

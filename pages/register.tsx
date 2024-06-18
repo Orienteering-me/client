@@ -19,7 +19,6 @@ import PasswordStrengthBar from "react-password-strength-bar";
 import { useRouter } from "next/router";
 import axios from "axios";
 import bcrypt from "bcryptjs";
-import ErrorAlert from "../components/ErrorAlert";
 import LoadingBox from "../components/LoadingBox";
 import { AuthContext, ErrorContext } from "./_app";
 

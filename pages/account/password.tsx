@@ -5,77 +5,72 @@ import {
   Breadcrumbs,
   Button,
   Container,
-  TextField,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  OutlinedInput,
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import bcrypt from "bcryptjs";
 import Link from "next/link";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
 import { AuthContext, ErrorContext } from "../_app";
 import { useRouter } from "next/router";
+import PasswordStrengthBar from "react-password-strength-bar";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { refreshTokens } from "../../hooks/refreshTokens";
 
-interface UserData {
-  email: string;
-  name: string;
-  phone_number: string;
-}
-
-export default function EditAccount() {
+export default function ChangePassword() {
   const authContext = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [newPasswordScore, setNewPasswordScore] = useState(0);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showRepeatNewPassword, setShowRepeatNewPassword] = useState(false);
 
-  const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
-  const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [repeatedNewPassword, setRepeatedNewPassword] = useState("");
 
-  async function getUserData() {
-    try {
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URI}/users`,
-        {
-          headers: {
-            "Access-Token": authContext.accessToken,
-          },
-        }
-      );
-      if (response.status == 200) {
-        setUserData(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-      if (error.response.status == 401) {
-        throw Error("Permiso denegado.");
-      } else if (error.response.status == 404) {
-        errorContext.setError("La cuenta actual no existe.");
-      } else {
-        errorContext.setError(
-          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
-        );
-      }
-    }
-  }
+  const [wrongNewPasswordFormat, setWrongNewPasswordFormat] = useState(false);
+  const [repeatedNewPasswordError, setRepeatedNewPasswordError] =
+    useState(false);
 
-  async function patchAccount(event: any) {
+  const handleClickShowNewPassword = () => setShowNewPassword((show) => !show);
+
+  const handleMouseDownNewPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
-    const wrongEmailFormat = !userData!.email.match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
-    setWrongEmailFormat(wrongEmailFormat);
-    const wrongPhoneFormat =
-      !userData!.phone_number
-        .replace(/[\s()+\-\.]|ext/gi, "")
-        .match(/^\d{5,}$/) && userData!.phone_number.length != 0;
-    setWrongPhoneFormat(wrongPhoneFormat);
+  };
 
-    if (!wrongEmailFormat && !wrongPhoneFormat) {
+  const handleClickShowRepeatNewPassword = () =>
+    setShowRepeatNewPassword((show) => !show);
+
+  const handleMouseDownRepeatNewPassword = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+  };
+
+  async function changePassword(event: any) {
+    event.preventDefault();
+    const wrongNewPasswordFormat = newPasswordScore < 2;
+    setWrongNewPasswordFormat(wrongNewPasswordFormat);
+    const repeatedNewPasswordError = newPassword != repeatedNewPassword;
+    setRepeatedNewPasswordError(repeatedNewPasswordError);
+
+    if (!wrongNewPasswordFormat && !repeatedNewPasswordError) {
       try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
         const response = await axios.patch(
           `${process.env.NEXT_PUBLIC_API_URI}/users`,
-          userData,
+          {
+            password: hashedPassword,
+          },
           {
             headers: {
               "Access-Token": authContext.accessToken,
@@ -83,7 +78,7 @@ export default function EditAccount() {
           }
         );
         if (response.status == 200) {
-          alert("La información de la cuenta se ha actualizado correctamente.");
+          alert("La contraseña se ha actualizado correctamente.");
           router.push("/account");
         }
       } catch (error) {
@@ -103,13 +98,7 @@ export default function EditAccount() {
     }
   }
 
-  useEffect(() => {
-    if (authContext.refreshToken) {
-      getUserData().catch(() => {
-        refreshTokens(authContext, errorContext);
-      });
-    }
-  }, [authContext]);
+  useEffect(() => {}, [authContext]);
 
   if (authContext.refreshToken == null) {
     return <LoadingBox />;
@@ -122,7 +111,7 @@ export default function EditAccount() {
         button_text="Iniciar sesión"
       />
     );
-  } else if (userData != null) {
+  } else if (newPassword != null) {
     return (
       <Container
         maxWidth={false}
@@ -135,7 +124,7 @@ export default function EditAccount() {
       >
         <Box
           sx={{
-            mt: { xs: 12, md: 20 },
+            mt: { xs: 15, md: 20 },
             mb: 4,
             display: "flex",
             flexDirection: "column",
@@ -154,12 +143,12 @@ export default function EditAccount() {
             <Link color="inherit" href="/account">
               Mi cuenta
             </Link>
-            <Typography color="text.primary">Editar cuenta</Typography>
+            <Typography color="text.primary">Cambiar contraseña</Typography>
           </Breadcrumbs>
           <form
             onSubmit={(event) => {
-              patchAccount(event).catch(() => {
-                window.location.reload();
+              changePassword(event).catch(() => {
+                refreshTokens(authContext, errorContext);
               });
             }}
             style={{ width: "100%" }}
@@ -175,7 +164,7 @@ export default function EditAccount() {
                 letterSpacing: ".1rem",
               }}
             >
-              Editar cuenta
+              Cambiar contraseña
             </Typography>
             <Typography
               variant="h6"
@@ -186,32 +175,54 @@ export default function EditAccount() {
                 fontWeight: 500,
               }}
             >
-              Correo electrónico
+              Nueva contraseña
             </Typography>
-            <TextField
+            <FormControl
               required
-              fullWidth
-              id="email-input"
-              placeholder="example@gmail.com"
               variant="outlined"
               margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: e.target.value,
-                  name: userData.name,
-                  phone_number: userData.phone_number,
-                })
-              }
-              value={userData.email}
-              error={wrongEmailFormat}
+              error={wrongNewPasswordFormat}
+              sx={{ width: "100%" }}
+            >
+              <InputLabel htmlFor="password-input">Contraseña</InputLabel>
+              <OutlinedInput
+                id="password-input"
+                label="Contraseña"
+                onChange={(e) => setNewPassword(e.target.value)}
+                type={showNewPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Cambia la visibilidad de la contraseña"
+                      onClick={handleClickShowNewPassword}
+                      onMouseDown={handleMouseDownNewPassword}
+                      edge="end"
+                    >
+                      {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            <PasswordStrengthBar
+              password={newPassword}
+              scoreWords={[
+                "Muy débil",
+                "Débil",
+                "Fuerte",
+                "Muy fuerte",
+                "Ideal",
+              ]}
+              minLength={0}
+              onChangeScore={(score, feedback) => setNewPasswordScore(score)}
             />
-            {wrongEmailFormat ? (
+            {wrongNewPasswordFormat ? (
               <Alert
                 variant="filled"
                 severity="error"
                 style={{ marginBottom: 5 }}
               >
-                Formato incorrecto.
+                La contraseña debe tener una puntuación de fuerte como mínimo.
               </Alert>
             ) : (
               <></>
@@ -220,61 +231,52 @@ export default function EditAccount() {
               variant="h6"
               noWrap
               sx={{
-                mt: 2,
                 display: "flex",
                 fontWeight: 500,
               }}
             >
-              Nombre completo
+              Repetir nueva contraseña
             </Typography>
-            <TextField
+            <FormControl
               required
-              fullWidth
-              id="name-input"
               variant="outlined"
               margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: userData.email,
-                  name: e.target.value,
-                  phone_number: userData.phone_number,
-                })
-              }
-              value={userData.name}
-            />
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                mt: 2,
-                display: "flex",
-                fontWeight: 500,
-              }}
+              error={repeatedNewPasswordError}
+              sx={{ width: "100%" }}
             >
-              Teléfono
-            </Typography>
-            <TextField
-              fullWidth
-              id="phone-input"
-              placeholder="+34 123456789"
-              variant="outlined"
-              margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: userData.email,
-                  name: userData.name,
-                  phone_number: e.target.value,
-                })
-              }
-              value={userData.phone_number}
-            />
-            {wrongPhoneFormat ? (
+              <InputLabel htmlFor="repeat-password-input">
+                Repetir contraseña
+              </InputLabel>
+              <OutlinedInput
+                id="repeat-password-input"
+                label="Repetir contraseña"
+                onChange={(e) => setRepeatedNewPassword(e.target.value)}
+                type={showRepeatNewPassword ? "text" : "password"}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Cambia la visibilidad de la contraseña"
+                      onClick={handleClickShowRepeatNewPassword}
+                      onMouseDown={handleMouseDownRepeatNewPassword}
+                      edge="end"
+                    >
+                      {showRepeatNewPassword ? (
+                        <VisibilityOff />
+                      ) : (
+                        <Visibility />
+                      )}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+            {repeatedNewPasswordError ? (
               <Alert
                 variant="filled"
                 severity="error"
                 style={{ marginBottom: 5 }}
               >
-                Formato incorrecto.
+                Las contraseñas no coinciden.
               </Alert>
             ) : (
               <></>

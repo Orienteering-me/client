@@ -26,7 +26,10 @@ export async function refreshTokens(authContext: any, errorContext: any) {
   } catch (error) {
     console.log(error);
     if (error.response.status == 401) {
-      throw Error("Permiso denegado.");
+      sessionStorage.removeItem("orienteering-me-access-token");
+      localStorage.removeItem("orienteering-me-refresh-token");
+      authContext.setAccessToken("");
+      authContext.setRefreshToken("");
     } else if (error.response.status == 404) {
       errorContext.setError("La cuenta actual no existe.");
     } else {

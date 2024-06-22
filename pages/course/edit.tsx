@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -9,33 +9,58 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import LoadingBox from "../../components/LoadingBox";
 import ForbiddenPage from "../../components/ForbiddenPage";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { AuthContext, ErrorContext } from "../_app";
-import { useRouter } from "next/router";
 import { refreshTokens } from "../../hooks/refreshTokens";
 
-interface UserData {
-  email: string;
-  name: string;
-  phone_number: string;
+const CreateCourseMap = dynamic(
+  () => import("../../components/maps/CreateCourseMap"),
+  {
+    ssr: false,
+  }
+);
+
+interface Checkpoint {
+  _id: string;
+  number: number;
+  lat: number;
+  lng: number;
+  qr_code: string;
 }
 
-export default function EditAccount() {
+type EditCourseContextType = {
+  courseName: string;
+  checkpoints: Checkpoint[];
+  setCheckpoints: (checkpoints: Checkpoint[]) => void;
+};
+
+export const CheckpointsContext = createContext<EditCourseContextType>({
+  courseName: "",
+  checkpoints: [],
+  setCheckpoints: () => {},
+});
+
+export default function EditCourse({ name }: any) {
   const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [courseName, setCourseName] = useState("");
+  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
 
-  const [wrongEmailFormat, setWrongEmailFormat] = useState(false);
-  const [wrongPhoneFormat, setWrongPhoneFormat] = useState(false);
+  const [courseNameHasForbiddenCharacter, setCourseNameHasForbiddenCharacter] =
+    useState(false);
+  const [validNumberOfCheckpoints, setValidNumberOfCheckpoints] =
+    useState(true);
 
-  async function requestUserData() {
+  async function getCourseData() {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URI}/users`,
+        `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
             "Access-Token": auth.accessToken,
@@ -43,14 +68,15 @@ export default function EditAccount() {
         }
       );
       if (response.status == 200) {
-        setUserData(response.data);
+        setCourseName(response.data.course.name);
+        setCheckpoints(response.data.course.checkpoints);
       }
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
         throw Error("Permiso denegado.");
       } else if (error.response.status == 404) {
-        errorContext.setError("La cuenta actual no existe.");
+        errorContext.setError("Esta carrera no existe.");
       } else {
         errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
@@ -59,32 +85,29 @@ export default function EditAccount() {
     }
   }
 
-  async function requestPatchUser(event: any) {
+  async function editCourse(event: any) {
     event.preventDefault();
-    const wrongEmailFormat = !userData!.email.match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
-    setWrongEmailFormat(wrongEmailFormat);
-    const wrongPhoneFormat =
-      !userData!.phone_number
-        .replace(/[\s()+\-\.]|ext/gi, "")
-        .match(/^\d{5,}$/) && userData!.phone_number.length != 0;
-    setWrongPhoneFormat(wrongPhoneFormat);
+    const courseNameHasForbiddenCharacter = courseName.includes("&");
+    setCourseNameHasForbiddenCharacter(courseNameHasForbiddenCharacter);
+    const validNumberOfCheckpoints = checkpoints.length >= 2;
+    setValidNumberOfCheckpoints(validNumberOfCheckpoints);
 
-    if (!wrongEmailFormat && !wrongPhoneFormat) {
+    if (!courseNameHasForbiddenCharacter && validNumberOfCheckpoints) {
       try {
-        const response = await axios.patch(
-          `${process.env.NEXT_PUBLIC_API_URI}/users`,
-          userData,
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URI}/courses`,
+          {
+            name: courseName,
+            checkpoints: checkpoints,
+          },
           {
             headers: {
               "Access-Token": auth.accessToken,
             },
           }
         );
-        if (response.status == 200) {
-          alert("La información de la cuenta se ha actualizado correctamente.");
-          router.push("/account");
+        if (response.status == 201) {
+          router.push("/course?name=" + courseName);
         }
       } catch (error) {
         console.log(error);
@@ -92,7 +115,7 @@ export default function EditAccount() {
           throw Error("Permiso denegado.");
         } else if (error.response.status == 409) {
           errorContext.setError(
-            "Ya existe una cuenta registrada con esta dirección de correo."
+            "Ya existe una carrera registrada con este nombre."
           );
         } else {
           errorContext.setError(
@@ -105,7 +128,7 @@ export default function EditAccount() {
 
   useEffect(() => {
     if (auth.refreshToken) {
-      requestUserData().catch(() => {
+      getCourseData().catch(() => {
         refreshTokens(auth, errorContext);
       });
     }
@@ -122,7 +145,7 @@ export default function EditAccount() {
         button_text="Iniciar sesión"
       />
     );
-  } else if (userData != null) {
+  } else if (courseName != null && checkpoints != null) {
     return (
       <Container
         maxWidth={false}
@@ -135,7 +158,7 @@ export default function EditAccount() {
       >
         <Box
           sx={{
-            mt: { xs: 12, md: 20 },
+            mt: { xs: 12, md: 15 },
             mb: 4,
             display: "flex",
             flexDirection: "column",
@@ -143,7 +166,7 @@ export default function EditAccount() {
             alignItems: "left",
             padding: "2% 5%",
             backgroundColor: "#ffffff",
-            width: { xs: "90%", md: "50%" },
+            width: { xs: "90%", md: "80%" },
             borderRadius: "25px",
           }}
         >
@@ -151,14 +174,14 @@ export default function EditAccount() {
             <Link color="inherit" href="/">
               Orienteering.me
             </Link>
-            <Link color="inherit" href="/account">
-              Mi cuenta
+            <Link color="inherit" href={"/course?name=" + name}>
+              {name}
             </Link>
-            <Typography color="text.primary">Editar cuenta</Typography>
+            <Typography color="text.primary">Editar carrera</Typography>
           </Breadcrumbs>
           <form
             onSubmit={(event) => {
-              requestPatchUser(event).catch(() => {
+              editCourse(event).catch(() => {
                 refreshTokens(auth, errorContext);
               });
             }}
@@ -166,15 +189,15 @@ export default function EditAccount() {
           >
             <Typography
               variant="h4"
-              noWrap
               sx={{
                 mt: 2,
                 mb: 2,
                 display: "flex",
                 fontWeight: 700,
+                letterSpacing: ".1rem",
               }}
             >
-              Editar cuenta
+              Editar carrera
             </Typography>
             <Typography
               variant="h6"
@@ -185,140 +208,99 @@ export default function EditAccount() {
                 fontWeight: 500,
               }}
             >
-              Correo electrónico
-            </Typography>
-            <TextField
-              required
-              fullWidth
-              id="email-input"
-              placeholder="example@gmail.com"
-              variant="outlined"
-              margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: e.target.value,
-                  name: userData.name,
-                  phone_number: userData.phone_number,
-                })
-              }
-              value={userData.email}
-              error={wrongEmailFormat}
-            />
-            {wrongEmailFormat ? (
-              <Alert
-                variant="filled"
-                severity="error"
-                style={{ marginBottom: 5 }}
-              >
-                Formato incorrecto.
-              </Alert>
-            ) : (
-              <></>
-            )}
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                mt: 2,
-                display: "flex",
-                fontWeight: 500,
-              }}
-            >
-              Nombre completo
+              Nombre de la carrera
             </Typography>
             <TextField
               required
               fullWidth
               id="name-input"
+              label="Nombre de la carrera"
               variant="outlined"
               margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: userData.email,
-                  name: e.target.value,
-                  phone_number: userData.phone_number,
-                })
-              }
-              value={userData.name}
+              onChange={(e) => setCourseName(e.target.value)}
+              value={courseName}
+              error={courseNameHasForbiddenCharacter}
             />
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                mt: 2,
-                display: "flex",
-                fontWeight: 500,
-              }}
-            >
-              Teléfono
-            </Typography>
-            <TextField
-              fullWidth
-              id="phone-input"
-              placeholder="+34 123456789"
-              variant="outlined"
-              margin="normal"
-              onChange={(e) =>
-                setUserData({
-                  email: userData.email,
-                  name: userData.name,
-                  phone_number: e.target.value,
-                })
-              }
-              value={userData.phone_number}
-            />
-            {wrongPhoneFormat ? (
+            {courseNameHasForbiddenCharacter ? (
               <Alert
                 variant="filled"
                 severity="error"
-                style={{ marginBottom: 5 }}
+                style={{ marginBottom: 20 }}
               >
-                Formato incorrecto.
+                El nombre de una carrera no puede contener el caracter "&".
+              </Alert>
+            ) : (
+              <></>
+            )}
+            <Typography
+              sx={{
+                display: "flex",
+                mt: 1,
+                fontSize: 15,
+              }}
+            >
+              * Para añadir un nuevo punto de control haga doble click sobre el
+              mapa.
+            </Typography>
+            <Typography
+              sx={{
+                display: "flex",
+                mb: 2,
+                fontSize: 15,
+              }}
+            >
+              * Para eliminar el último punto de control creado pulse Suprimir o
+              Borrar.
+            </Typography>
+            <CheckpointsContext.Provider
+              value={{ courseName, checkpoints, setCheckpoints }}
+            >
+              <CreateCourseMap />
+            </CheckpointsContext.Provider>
+            {!validNumberOfCheckpoints ? (
+              <Alert
+                variant="filled"
+                severity="error"
+                style={{ marginTop: 10 }}
+              >
+                Una carrera debe tener un mínimo de dos puntos de control.
               </Alert>
             ) : (
               <></>
             )}
             <Button
+              variant="outlined"
+              fullWidth
+              style={{
+                marginTop: 25,
+                fontWeight: 700,
+              }}
+              onClick={() => {
+                setCheckpoints(checkpoints.slice(0, -1));
+              }}
+            >
+              Borrar último punto de control
+            </Button>
+            <Button
               type="submit"
               variant="contained"
               fullWidth
               style={{
-                marginTop: 15,
-                marginBottom: 10,
+                marginTop: 5,
                 color: "white",
                 fontWeight: 700,
               }}
             >
-              Confirmar
-            </Button>
-            <Button
-              variant="outlined"
-              fullWidth
-              style={{
-                fontWeight: 700,
-                marginBottom: 10,
-              }}
-              href="/account"
-            >
-              Cancelar
+              Crear recorrido
             </Button>
           </form>
         </Box>
       </Container>
     );
-  } else {
-    return (
-      <Container
-        maxWidth={false}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-        disableGutters
-      >
-        <LoadingBox />
-      </Container>
-    );
   }
 }
+
+EditCourse.getInitialProps = async ({ query }: any) => {
+  const { name } = query;
+  return { name };
+};

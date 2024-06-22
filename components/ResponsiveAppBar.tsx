@@ -3,7 +3,6 @@ import {
   AppBar,
   Avatar,
   Box,
-  Button,
   Container,
   IconButton,
   Menu,
@@ -15,8 +14,6 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { AuthContext } from "../pages/_app";
 
-const pages = [{ text: "Información", href: "info" }];
-
 const menuItems = [
   { text: "Iniciar sesión", href: "/login" },
   { text: "Registrarme", href: "/register" },
@@ -24,7 +21,6 @@ const menuItems = [
 
 const authenticatedMenuItems = [
   { text: "Mi cuenta", href: "/account" },
-  { text: "Carreras favoritas", href: "/course/favourites" },
   { text: "Crear carrera", href: "/course/create" },
   { text: "Carreras creadas", href: "/course/created" },
   { text: "Cerrar sesión", href: "/logout" },
@@ -99,42 +95,6 @@ function ResponsiveAppBar() {
             >
               <MenuIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left",
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: "block", md: "none" },
-              }}
-            >
-              {pages.map((page) => (
-                <MenuItem
-                  key={page.text}
-                  onClick={handleCloseNavMenu}
-                  component="a"
-                  href={page.href}
-                >
-                  <Typography
-                    textAlign="center"
-                    sx={{
-                      fontWeight: 500,
-                    }}
-                  >
-                    {page.text}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
           <Box
             component="a"
@@ -168,25 +128,6 @@ function ResponsiveAppBar() {
           >
             ORIENTEERING.ME
           </Typography>
-          <Box sx={{ display: { xs: "none", md: "flex" } }}>
-            {pages.map((page) => (
-              <Button
-                key={page.text}
-                onClick={handleCloseNavMenu}
-                sx={{
-                  mr: 2,
-                  my: 2,
-                  color: "white",
-                  display: "block",
-                  fontSize: 20,
-                }}
-                href={page.href}
-              >
-                {page.text}
-              </Button>
-            ))}
-          </Box>
-
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Abrir menú">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 1 }}>

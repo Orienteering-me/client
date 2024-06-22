@@ -1,5 +1,6 @@
 import ForbiddenPage from "../components/ForbiddenPage";
 
+// Not found page
 export default function NotFound() {
   return (
     <ForbiddenPage

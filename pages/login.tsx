@@ -19,6 +19,7 @@ import axios from "axios";
 import LoadingBox from "../components/LoadingBox";
 import { AuthContext, ErrorContext } from "./_app";
 
+// Login page
 export default function Login() {
   const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
@@ -37,9 +38,9 @@ export default function Login() {
     event.preventDefault();
   };
 
+  // Sends a request to the backend to login
   async function login(event: any) {
     event.preventDefault();
-
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URI}/login`,
@@ -48,11 +49,14 @@ export default function Login() {
           password: password,
         }
       );
+      // If the response status is OK saves the tokens
       if (response.status == 200) {
+        auth.setRefreshToken(response.data.refresh_token);
         localStorage.setItem(
           "orienteering-me-refresh-token",
           response.data.refresh_token
         );
+        auth.setAccessToken(response.data.access_token);
         sessionStorage.setItem(
           "orienteering-me-access-token",
           response.data.access_token
@@ -63,8 +67,6 @@ export default function Login() {
       console.log(error);
       if (error.response.status == 401) {
         errorContext.setError("La contraseña introducida es incorrecta.");
-      } else if (error.response.status == 404) {
-        errorContext.setError("La cuenta introducida no existe.");
       } else {
         errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
@@ -73,6 +75,7 @@ export default function Login() {
     }
   }
 
+  // If there is a session open redirects the user to the main page
   useEffect(() => {
     if (auth.refreshToken != "" && auth.refreshToken != null) {
       router.push("/");

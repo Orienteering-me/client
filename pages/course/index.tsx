@@ -42,7 +42,7 @@ interface CourseData {
 }
 
 export default function Course({ name }: any) {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
@@ -57,7 +57,7 @@ export default function Course({ name }: any) {
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
@@ -89,7 +89,7 @@ export default function Course({ name }: any) {
         `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + courseData!.name,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
@@ -113,16 +113,16 @@ export default function Course({ name }: any) {
   }
 
   useEffect(() => {
-    if (authContext.refreshToken) {
+    if (auth.refreshToken) {
       getCourseData().catch(() => {
-        refreshTokens(authContext, errorContext);
+        refreshTokens(auth, errorContext);
       });
     }
-  }, [authContext]);
+  }, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -216,7 +216,7 @@ export default function Course({ name }: any) {
               marginTop: 20,
               fontWeight: 700,
             }}
-            href={"/course/results?course=" + name}
+            href={"/course/times?course=" + name}
           >
             Ver resultados
           </Button>
@@ -276,7 +276,7 @@ export default function Course({ name }: any) {
                       onClick={() => {
                         setOpenDeleteDialog(false);
                         deleteCourse().catch(() => {
-                          refreshTokens(authContext, errorContext);
+                          refreshTokens(auth, errorContext);
                         });
                       }}
                     >

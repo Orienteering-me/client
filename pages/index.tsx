@@ -5,52 +5,45 @@ import { useContext, useEffect, useState } from "react";
 import LoadingBox from "../components/LoadingBox";
 import { AuthContext, ErrorContext } from "./_app";
 import { refreshTokens } from "../hooks/refreshTokens";
+import { CoursesProps } from "../components/maps/MainPageMap";
 
 const MainPageMap = dynamic(() => import("../components/maps/MainPageMap"), {
   ssr: false,
 });
 
-interface APICourse {
-  name: string;
-  admin: { _id: string; name: string };
-  checkpoints: [
-    { _id: string; number: number; lat: number; lng: number; qr_code: number }
-  ];
-}
-
-interface CoursesProps {
-  name: string;
-  admin: string;
-  lat: number;
-  lng: number;
-}
-
+// Main page
 export default function Main() {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
 
   const [courses, setCourses] = useState<CoursesProps[] | null>(null);
 
-  async function getCourseData() {
+  async function requestCoursesData() {
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/courses`,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
       if (response.status == 200) {
         setCourses(
-          response.data.map((course: APICourse) => {
-            return {
-              name: course.name,
-              admin: course.admin.name,
-              lat: course.checkpoints[0].lat,
-              lng: course.checkpoints[0].lng,
-            };
-          })
+          response.data.courses.map(
+            (course: {
+              name: string;
+              admin: { name: string };
+              checkpoints: [{ lat: number; lng: number }];
+            }) => {
+              return {
+                name: course.name,
+                admin: course.admin.name,
+                lat: course.checkpoints[0].lat,
+                lng: course.checkpoints[0].lng,
+              };
+            }
+          )
         );
       }
     } catch (error) {
@@ -68,16 +61,16 @@ export default function Main() {
   }
 
   useEffect(() => {
-    if (authContext.refreshToken) {
-      getCourseData().catch(() => {
-        refreshTokens(authContext, errorContext);
+    if (auth.refreshToken) {
+      requestCoursesData().catch(() => {
+        refreshTokens(auth, errorContext);
       });
     }
-  }, [authContext]);
+  }, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <Box
         sx={{

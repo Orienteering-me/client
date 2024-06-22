@@ -44,7 +44,7 @@ export const CheckpointsContext = createContext<CreateCourseContextType>({
 });
 
 export default function CreateCourse() {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
@@ -73,7 +73,7 @@ export default function CreateCourse() {
           },
           {
             headers: {
-              "Access-Token": authContext.accessToken,
+              "Access-Token": auth.accessToken,
             },
           }
         );
@@ -97,11 +97,11 @@ export default function CreateCourse() {
     }
   }
 
-  useEffect(() => {}, [authContext]);
+  useEffect(() => {}, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -144,7 +144,7 @@ export default function CreateCourse() {
           <form
             onSubmit={(event) => {
               createCourse(event).catch(() => {
-                window.location.reload();
+                refreshTokens(auth, errorContext);
               });
             }}
             style={{ width: "100%" }}
@@ -169,6 +169,7 @@ export default function CreateCourse() {
               variant="outlined"
               margin="normal"
               onChange={(e) => setCourseName(e.target.value)}
+              error={courseNameHasForbiddenCharacter}
             />
             {courseNameHasForbiddenCharacter ? (
               <Alert

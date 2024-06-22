@@ -1,83 +1,52 @@
-import { Fragment, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Box,
   Breadcrumbs,
   Button,
   Container,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  Table,
   Typography,
 } from "@mui/material";
 import axios from "axios";
 import ForbiddenPage from "../../../components/ForbiddenPage";
 import LoadingBox from "../../../components/LoadingBox";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { AuthContext, ErrorContext } from "../../_app";
 import { refreshTokens } from "../../../hooks/refreshTokens";
 import ResultsTable from "../../../components/ResultsTable";
+import AdminResultsTable from "../../../components/AdminResultsTable";
 
 interface Result {
   course: string;
-  user: string;
+  user: {
+    email: string;
+    name: string;
+  };
   time: number;
 }
 
-export default function Course({ course }: any) {
-  const authContext = useContext(AuthContext);
+export default function Results({ course }: any) {
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
-  const router = useRouter();
 
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-
-  const [userIsAdmin, setUserIsAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [hasUploadedResults, setHasUploadedResults] = useState<boolean>(false);
   const [results, setResults] = useState<Result[] | null>(null);
 
   async function getRanking() {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URI}/results?course=` + course,
+        `${process.env.NEXT_PUBLIC_API_URI}/times?course=` + course,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
       if (response.status == 200) {
-        console.log(response.data);
-        setResults(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-      if (error.response.status == 401) {
-        throw Error("Permiso denegado.");
-      } else if (error.response.status == 404) {
-        errorContext.setError("Esta carrera no existe.");
-      } else {
-        errorContext.setError(
-          "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
-        );
-      }
-    }
-  }
-
-  async function deleteCourse() {
-    try {
-      const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + course,
-        {
-          headers: {
-            "Access-Token": authContext.accessToken,
-          },
-        }
-      );
-
-      if (response.status == 200) {
-        alert("La carrera ha sido eliminada correctamente.");
-        router.push("/");
+        setIsAdmin(response.data.is_admin);
+        setHasUploadedResults(response.data.has_uploaded);
+        setResults(response.data.results);
       }
     } catch (error) {
       console.log(error);
@@ -94,16 +63,16 @@ export default function Course({ course }: any) {
   }
 
   useEffect(() => {
-    if (authContext.refreshToken) {
+    if (auth.refreshToken) {
       getRanking().catch(() => {
-        refreshTokens(authContext, errorContext);
+        refreshTokens(auth, errorContext);
       });
     }
-  }, [authContext]);
+  }, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -112,7 +81,7 @@ export default function Course({ course }: any) {
         button_text="Iniciar sesión"
       />
     );
-  } else if (results != null) {
+  } else if (results != null && isAdmin != null && hasUploadedResults != null) {
     return (
       <Container
         maxWidth={false}
@@ -167,27 +136,48 @@ export default function Course({ course }: any) {
           >
             {course}
           </Typography>
-          <ResultsTable rows={results} sx={{ mt: 4 }} />
-          {userIsAdmin ? (
-            <Button
-              variant="outlined"
-              style={{
-                marginTop: 25,
-                fontWeight: 700,
-              }}
-              href={"/course/edit?name=" + course}
-            >
-              Editar carrera
-            </Button>
+          {isAdmin ? (
+            <AdminResultsTable
+              rows={results.map((result, index) => {
+                return {
+                  id: result.user.email,
+                  position:
+                    result.time != Number.MAX_SAFE_INTEGER
+                      ? index + 1 + ""
+                      : "_",
+                  name: result.user.name,
+                  time: result.time,
+                };
+              })}
+              course={course}
+            />
+          ) : (
+            <ResultsTable
+              rows={results.map((result, index) => {
+                return {
+                  id: result.user.email,
+                  position:
+                    result.time != Number.MAX_SAFE_INTEGER
+                      ? index + 1 + ""
+                      : "_",
+                  name: result.user.name,
+                  time: result.time,
+                };
+              })}
+            />
+          )}
+          {isAdmin ? (
+            <></>
           ) : (
             <Button
               variant="contained"
+              disabled={hasUploadedResults}
               style={{
                 marginTop: 25,
                 fontWeight: 700,
                 color: "white",
               }}
-              href={"/course/results/upload?course=" + course}
+              href={"/course/times/upload?course=" + course}
             >
               Subir resultados
             </Button>
@@ -200,7 +190,7 @@ export default function Course({ course }: any) {
   }
 }
 
-Course.getInitialProps = async ({ query }: any) => {
+Results.getInitialProps = async ({ query }: any) => {
   const { course } = query;
   return { course };
 };

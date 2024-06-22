@@ -7,6 +7,7 @@ interface Props {
   button_href: string;
 }
 
+// Forbidden page component to show in forbidden pages
 function ForbiddenPage({ title, message, button_text, button_href }: Props) {
   return (
     <Container

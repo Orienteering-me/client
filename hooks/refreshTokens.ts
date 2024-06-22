@@ -1,17 +1,19 @@
 import axios from "axios";
 
-export async function refreshTokens(authContext: any, errorContext: any) {
+export async function refreshTokens(auth: any, errorContext: any) {
   try {
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URI}/refresh`,
       {},
       {
         headers: {
-          "Refresh-Token": authContext.refreshToken,
+          "Refresh-Token": auth.refreshToken,
         },
       }
     );
     if (response.status == 200) {
+      auth.setAccessToken(response.data.access_token);
+      auth.setRefreshToken(response.data.refresh_token);
       sessionStorage.setItem(
         "orienteering-me-access-token",
         response.data.access_token
@@ -20,17 +22,14 @@ export async function refreshTokens(authContext: any, errorContext: any) {
         "orienteering-me-refresh-token",
         response.data.refresh_token
       );
-      authContext.setAccessToken(response.data.access_token);
-      authContext.setRefreshToken(response.data.refresh_token);
     }
   } catch (error) {
     console.log(error);
-    if (error.response.status == 401) {
-      sessionStorage.removeItem("orienteering-me-access-token");
-      localStorage.removeItem("orienteering-me-refresh-token");
-      authContext.setAccessToken("");
-      authContext.setRefreshToken("");
-    } else if (error.response.status == 404) {
+    auth.setAccessToken("");
+    auth.setRefreshToken("");
+    sessionStorage.removeItem("orienteering-me-access-token");
+    localStorage.removeItem("orienteering-me-refresh-token");
+    if (error.response.status == 404) {
       errorContext.setError("La cuenta actual no existe.");
     } else {
       errorContext.setError(

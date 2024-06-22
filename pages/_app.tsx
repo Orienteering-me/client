@@ -7,13 +7,8 @@ import theme from "../components/theme";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import { createContext, useEffect, useState } from "react";
 import ErrorAlert from "../components/ErrorAlert";
-
-type AuthContextType = {
-  refreshToken: string | null;
-  setRefreshToken: (refreshToken: string | null) => void;
-  accessToken: string | null;
-  setAccessToken: (accessToken: string | null) => void;
-};
+import { AuthContextType } from "../types/AuthContextType";
+import { ErrorContextType } from "../types/ErrorContextType";
 
 export const AuthContext = createContext<AuthContextType>({
   refreshToken: null,
@@ -21,11 +16,6 @@ export const AuthContext = createContext<AuthContextType>({
   accessToken: null,
   setAccessToken: () => {},
 });
-
-type ErrorContextType = {
-  error: string;
-  setError: (error: string) => void;
-};
 
 export const ErrorContext = createContext<ErrorContextType>({
   error: "",
@@ -40,17 +30,15 @@ export default function MyApp(props: AppProps) {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const refreshToken = localStorage.getItem("orienteering-me-refresh-token");
-    if (refreshToken) {
-      setRefreshToken(refreshToken);
-    } else {
-      setRefreshToken("");
+    if (refreshToken == null) {
+      setRefreshToken(
+        localStorage.getItem("orienteering-me-refresh-token") || ""
+      );
     }
-    const accessToken = sessionStorage.getItem("orienteering-me-access-token");
-    if (accessToken) {
-      setAccessToken(accessToken);
-    } else {
-      setAccessToken("");
+    if (accessToken == null) {
+      setAccessToken(
+        sessionStorage.getItem("orienteering-me-access-token") || ""
+      );
     }
   }, []);
 

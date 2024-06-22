@@ -19,29 +19,29 @@ import { AuthContext, ErrorContext } from "../_app";
 import { useRouter } from "next/router";
 import { refreshTokens } from "../../hooks/refreshTokens";
 
-// TODO Cambiar Contraseña
-
 interface UserData {
   email: string;
   name: string;
   phone_number: string;
 }
 
+// Account page
 export default function Account() {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  async function getUserData() {
+  // Sends a request to the backend to get the user data
+  async function requestUserData() {
     try {
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
@@ -62,13 +62,14 @@ export default function Account() {
     }
   }
 
-  async function deleteUser() {
+  // Sends a request to the backend to delete the user
+  async function requestDeleteUser() {
     try {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URI}/users`,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
@@ -76,7 +77,7 @@ export default function Account() {
         alert("La cuenta ha sido eliminada correctamente.");
         sessionStorage.removeItem("orienteering-me-access-token");
         localStorage.removeItem("orienteering-me-refresh-token");
-        await router.push("/");
+        router.push("/");
       }
     } catch (error) {
       console.log(error);
@@ -93,16 +94,16 @@ export default function Account() {
   }
 
   useEffect(() => {
-    if (authContext.refreshToken) {
-      getUserData().catch(() => {
-        refreshTokens(authContext, errorContext);
+    if (auth.refreshToken) {
+      requestUserData().catch(() => {
+        refreshTokens(auth, errorContext);
       });
     }
-  }, [authContext]);
+  }, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -150,7 +151,6 @@ export default function Account() {
               mb: 2,
               display: "flex",
               fontWeight: 700,
-              letterSpacing: ".1rem",
             }}
           >
             Mi cuenta
@@ -161,7 +161,7 @@ export default function Account() {
             sx={{
               mt: 2,
               display: "flex",
-              fontWeight: 700,
+              fontWeight: 500,
             }}
           >
             Correo electrónico
@@ -174,6 +174,7 @@ export default function Account() {
               display: "flex",
               fontWeight: 500,
             }}
+            color="text.secondary"
           >
             {userData.email}
           </Typography>
@@ -183,7 +184,7 @@ export default function Account() {
             sx={{
               mt: 2,
               display: "flex",
-              fontWeight: 700,
+              fontWeight: 500,
             }}
           >
             Nombre completo
@@ -196,6 +197,7 @@ export default function Account() {
               display: "flex",
               fontWeight: 500,
             }}
+            color="text.secondary"
           >
             {userData.name}
           </Typography>
@@ -205,7 +207,7 @@ export default function Account() {
             sx={{
               mt: 2,
               display: "flex",
-              fontWeight: 700,
+              fontWeight: 500,
             }}
           >
             Teléfono
@@ -218,6 +220,7 @@ export default function Account() {
               display: "flex",
               fontWeight: 500,
             }}
+            color="text.secondary"
           >
             {Boolean(userData.phone_number) ? userData.phone_number : "-"}
           </Typography>
@@ -265,7 +268,7 @@ export default function Account() {
               aria-describedby="alert-dialog-description"
             >
               <DialogTitle id="alert-dialog-title">
-                {"¿Está seguro de que quiere borrar su cuenta?"}
+                {"¿Estás seguro de que quieres borrar la cuenta?"}
               </DialogTitle>
               <DialogContent>
                 <DialogContentText id="alert-dialog-description">
@@ -282,8 +285,8 @@ export default function Account() {
                   }}
                   onClick={() => {
                     setOpenDeleteDialog(false);
-                    deleteUser().catch(() => {
-                      refreshTokens(authContext, errorContext);
+                    requestDeleteUser().catch(() => {
+                      refreshTokens(auth, errorContext);
                     });
                   }}
                 >

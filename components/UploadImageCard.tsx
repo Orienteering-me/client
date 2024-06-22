@@ -17,12 +17,7 @@ export function UploadImageCard({ image, valid, msg }: UploadImageCardProps) {
   return (
     <Grid item xs={12} sm={6} md={4}>
       <Card>
-        <CardMedia
-          sx={{ height: 350 }}
-          image={
-            Boolean(image) ? URL.createObjectURL(image!) : "/default_image.svg"
-          }
-        />
+        <CardMedia sx={{ height: 350 }} image={URL.createObjectURL(image!)} />
         {valid == null ? (
           <></>
         ) : (

@@ -21,6 +21,7 @@ import { UploadImageCard } from "../../../components/UploadImageCard";
 import { AuthContext, ErrorContext } from "../../_app";
 import { refreshTokens } from "../../../hooks/refreshTokens";
 import { CheckCircle, Cancel } from "@mui/icons-material";
+import { useRouter } from "next/router";
 
 interface ImageStatus {
   valid: boolean | null;
@@ -38,10 +39,11 @@ export const ImagesStatusContext = createContext<ImagesStatusContextType>({
 });
 
 export default function RunCourse({ course }: any) {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
+  const router = useRouter();
 
-  const [uploadedStats, setUploadedStats] = useState<boolean[] | null>(null);
+  const [uploadedTimes, setUploadedTimes] = useState<boolean[] | null>(null);
   const [imagesStatus, setImagesStatus] = useState<ImageStatus[]>([]);
   const [processedImagesNumber, setProcessedImagesNumber] = useState<number>(0);
   const [imagesToProcessNumber, setImagesToProcessNumber] = useState<number>(0);
@@ -49,24 +51,35 @@ export default function RunCourse({ course }: any) {
 
   const [images, setImages] = useState<File[]>([]);
 
-  async function getData() {
+  // Sends a request to the backend to check if the user must send some times
+  async function requestUploadedTimes() {
     try {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URI}/stats?course=` + course,
+        `${process.env.NEXT_PUBLIC_API_URI}/times/uploaded?course=` + course,
         {
           headers: {
-            "Access-Token": authContext.accessToken,
+            "Access-Token": auth.accessToken,
           },
         }
       );
 
       if (response.status == 200) {
-        setUploadedStats(
-          response.data.map((stat: any) => {
-            return stat != null;
-          })
-        );
-        console.log(response.data);
+        if (response.data.is_admin) {
+          router.push("/course/times?course=" + course);
+          return;
+        }
+        const uploadedTimes = response.data.times.map((stat: any) => {
+          return stat != null;
+        });
+        if (
+          uploadedTimes.filter((value: any) => {
+            return value;
+          }).length == uploadedTimes.length
+        ) {
+          router.push("/course/times?course=" + course);
+          return;
+        }
+        setUploadedTimes(uploadedTimes);
       }
     } catch (error) {
       console.log(error);
@@ -88,8 +101,16 @@ export default function RunCourse({ course }: any) {
     for (let index = 0; index < files.length; index++) {
       const file: File | null = files.item(index);
       if (file) {
-        imageList.push(file);
-        imageStatusList.push({ valid: null, msg: "" });
+        const fileType = file["type"];
+        const validImageTypes = ["image/jpeg", "image/png"];
+        if (validImageTypes.includes(fileType)) {
+          imageList.push(file);
+          imageStatusList.push({ valid: null, msg: "" });
+        } else {
+          errorContext.setError(
+            "Los formatos de imagen aceptados son JPEG y PNG."
+          );
+        }
       }
     }
     setImages(imageList);
@@ -102,19 +123,19 @@ export default function RunCourse({ course }: any) {
       setImagesToProcessNumber(images.length);
       setRequestIsLoading(true);
       const newImagesStatus: ImageStatus[] = [...imagesStatus];
-      const newUploadedStats: boolean[] = [...uploadedStats!];
+      const newUploadedStats: boolean[] = [...uploadedTimes!];
       for (let index = 0; index < images.length; index++) {
         try {
           const formData = new FormData();
           formData.append("image", images[index]);
 
           const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URI}/stats?course=` + course,
+            `${process.env.NEXT_PUBLIC_API_URI}/times?course=` + course,
             formData,
             {
               headers: {
                 "Content-Type": "multipart/form-data",
-                "Access-Token": authContext.accessToken,
+                "Access-Token": auth.accessToken,
               },
             }
           );
@@ -138,8 +159,16 @@ export default function RunCourse({ course }: any) {
           setProcessedImagesNumber(index + 1);
         }
       }
+      if (
+        newUploadedStats.filter((value) => {
+          return value;
+        }).length == newUploadedStats.length
+      ) {
+        router.push("/course/times?course=" + course);
+        return;
+      }
       setImagesStatus(newImagesStatus);
-      setUploadedStats(newUploadedStats);
+      setUploadedTimes(newUploadedStats);
       setRequestIsLoading(false);
       setProcessedImagesNumber(0);
     } catch (error) {
@@ -150,16 +179,16 @@ export default function RunCourse({ course }: any) {
   }
 
   useEffect(() => {
-    if (authContext.refreshToken) {
-      getData().catch(() => {
-        refreshTokens(authContext, errorContext);
+    if (auth.refreshToken) {
+      requestUploadedTimes().catch(() => {
+        refreshTokens(auth, errorContext);
       });
     }
-  }, [authContext]);
+  }, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -168,7 +197,7 @@ export default function RunCourse({ course }: any) {
         button_text="Iniciar sesión"
       />
     );
-  } else if (uploadedStats != null) {
+  } else if (uploadedTimes != null) {
     return (
       <Container
         maxWidth={false}
@@ -246,12 +275,15 @@ export default function RunCourse({ course }: any) {
             <Link color="inherit" href={"/course?name=" + course}>
               {course}
             </Link>
+            <Link color="inherit" href={"/course/times?course=" + course}>
+              Ver resultados
+            </Link>
             <Typography color="text.primary">Subir resultados</Typography>
           </Breadcrumbs>
           <form
             onSubmit={(event) => {
               sendImages(event).catch(() => {
-                window.location.reload();
+                refreshTokens(auth, errorContext);
               });
             }}
             style={{ width: "100%" }}
@@ -310,7 +342,7 @@ export default function RunCourse({ course }: any) {
                 fontWeight: 700,
               }}
             >
-              * Los formatos admitidos son JPG, JPEG y PNG.
+              * Los formatos admitidos son JPEG y PNG.
             </Typography>
             <Typography
               variant="h6"
@@ -324,7 +356,7 @@ export default function RunCourse({ course }: any) {
               Puntos de control subidos
             </Typography>
             <List dense={true}>
-              {uploadedStats.map((uploadedStat, index) => {
+              {uploadedTimes.map((uploadedStat, index) => {
                 return (
                   <ListItem key={index + 1}>
                     <ListItemIcon>

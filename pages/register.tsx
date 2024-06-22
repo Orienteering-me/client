@@ -22,6 +22,7 @@ import bcrypt from "bcryptjs";
 import LoadingBox from "../components/LoadingBox";
 import { AuthContext, ErrorContext } from "./_app";
 
+// Register page
 export default function Register() {
   const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
@@ -61,19 +62,24 @@ export default function Register() {
     event.preventDefault();
   };
 
-  async function registerAccount(event: any) {
+  // Sends a request to the backend to register a new user
+  async function requestRegisterAccount(event: any) {
     event.preventDefault();
+    // Checks if the email format is correct
     const wrongEmailFormat = !userData.email.match(
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
     setWrongEmailFormat(wrongEmailFormat);
+    // Checks if the phone number format is correct
     const wrongPhoneFormat =
       !userData.phone_number
         .replace(/[\s()+\-\.]|ext/gi, "")
         .match(/^\d{5,}$/) && userData.phone_number.length != 0;
     setWrongPhoneFormat(wrongPhoneFormat);
+    // Checks if the password is strong enough
     const wrongPasswordFormat = passwordScore < 2;
     setWrongPasswordFormat(wrongPasswordFormat);
+    // Checks if the repeated password is the same as the password
     const repeatedPasswordError = userData.password != repeatedPassword;
     setRepeatedPasswordError(repeatedPasswordError);
 
@@ -95,6 +101,7 @@ export default function Register() {
           }
         );
 
+        // If the response status is OK redirects the user to login
         if (response.status == 201) {
           alert("Te has registrado correctamente.");
           router.push("/login");
@@ -114,6 +121,7 @@ export default function Register() {
     }
   }
 
+  // If there is a session open redirects the user to the main page
   useEffect(() => {
     if (auth.refreshToken != "" && auth.refreshToken != null) {
       router.push("/");
@@ -153,7 +161,7 @@ export default function Register() {
             </Link>
             <Typography color="text.primary">Regístrate</Typography>
           </Breadcrumbs>
-          <form onSubmit={registerAccount} style={{ width: "100%" }}>
+          <form onSubmit={requestRegisterAccount} style={{ width: "100%" }}>
             <Typography
               variant="h4"
               sx={{

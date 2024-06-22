@@ -24,7 +24,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { refreshTokens } from "../../hooks/refreshTokens";
 
 export default function ChangePassword() {
-  const authContext = useContext(AuthContext);
+  const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
   const router = useRouter();
 
@@ -56,7 +56,7 @@ export default function ChangePassword() {
     event.preventDefault();
   };
 
-  async function changePassword(event: any) {
+  async function requestPatchPassword(event: any) {
     event.preventDefault();
     const wrongNewPasswordFormat = newPasswordScore < 2;
     setWrongNewPasswordFormat(wrongNewPasswordFormat);
@@ -73,7 +73,7 @@ export default function ChangePassword() {
           },
           {
             headers: {
-              "Access-Token": authContext.accessToken,
+              "Access-Token": auth.accessToken,
             },
           }
         );
@@ -98,11 +98,11 @@ export default function ChangePassword() {
     }
   }
 
-  useEffect(() => {}, [authContext]);
+  useEffect(() => {}, [auth]);
 
-  if (authContext.refreshToken == null) {
+  if (auth.refreshToken == null) {
     return <LoadingBox />;
-  } else if (authContext.refreshToken == "") {
+  } else if (auth.refreshToken == "") {
     return (
       <ForbiddenPage
         title="No has iniciado sesión o no tienes permiso"
@@ -147,8 +147,8 @@ export default function ChangePassword() {
           </Breadcrumbs>
           <form
             onSubmit={(event) => {
-              changePassword(event).catch(() => {
-                refreshTokens(authContext, errorContext);
+              requestPatchPassword(event).catch(() => {
+                refreshTokens(auth, errorContext);
               });
             }}
             style={{ width: "100%" }}
@@ -214,7 +214,7 @@ export default function ChangePassword() {
                 "Ideal",
               ]}
               minLength={0}
-              onChangeScore={(score, feedback) => setNewPasswordScore(score)}
+              onChangeScore={(score) => setNewPasswordScore(score)}
             />
             {wrongNewPasswordFormat ? (
               <Alert

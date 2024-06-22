@@ -5,16 +5,18 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 
-interface MainPageMapProps {
-  courses: {
-    name: string;
-    admin: string;
-    lat: number;
-    lng: number;
-  }[];
+export interface CoursesProps {
+  name: string;
+  admin: string;
+  lat: number;
+  lng: number;
 }
 
-function MainPageMap({ courses }: MainPageMapProps) {
+interface Props {
+  courses: CoursesProps[];
+}
+
+function MainPageMap({ courses }: Props) {
   const center = { lat: 40.421078, lng: -3.704622 };
 
   function LocateMap() {
@@ -32,7 +34,7 @@ function MainPageMap({ courses }: MainPageMapProps) {
 
   return (
     <div className="container" style={{ height: "100%", width: "100%" }}>
-      <MapContainer center={center} zoom={5} maxZoom={17}>
+      <MapContainer center={center} zoom={4} maxZoom={17}>
         <LocateMap />
         <TileLayer
           attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'

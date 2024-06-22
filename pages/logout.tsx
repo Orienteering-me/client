@@ -5,12 +5,14 @@ import LoadingBox from "../components/LoadingBox";
 import ForbiddenPage from "../components/ForbiddenPage";
 import axios from "axios";
 
+// Logout page
 export default function Logout() {
   const auth = useContext(AuthContext);
   const errorContext = useContext(ErrorContext);
 
   const [loggedOut, setLoggedOut] = useState<Boolean | null>(null);
 
+  // Sends a request to the backend to logout
   async function logout() {
     try {
       const response = await axios.post(
@@ -23,13 +25,15 @@ export default function Logout() {
         }
       );
       if (response.status == 200) {
+        auth.setRefreshToken("");
+        auth.setAccessToken("");
         sessionStorage.removeItem("orienteering-me-access-token");
         localStorage.removeItem("orienteering-me-refresh-token");
         setLoggedOut(true);
       }
     } catch (error) {
       console.log(error);
-      // The error is only showed if the error was a server error
+      // The error is only showed if the error was a server error, else logsout in the frontend because the backend data is deleted anyways
       if (error.response.status == 500) {
         errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."

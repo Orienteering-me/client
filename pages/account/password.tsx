@@ -155,7 +155,6 @@ export default function ChangePassword() {
           >
             <Typography
               variant="h4"
-              noWrap
               sx={{
                 mt: 2,
                 mb: 2,
@@ -168,7 +167,6 @@ export default function ChangePassword() {
             </Typography>
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 2,
                 display: "flex",
@@ -229,7 +227,6 @@ export default function ChangePassword() {
             )}
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 display: "flex",
                 fontWeight: 500,

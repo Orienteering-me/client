@@ -21,7 +21,7 @@ import {
   ModifyCourseContextCheckpoint,
 } from "../../hooks/ModifyCourseContext";
 
-const CreateCourseMap = dynamic(
+const ModifyCourseMap = dynamic(
   () => import("../../components/maps/ModifyCourseMap"),
   {
     ssr: false,
@@ -192,7 +192,7 @@ export default function CreateCourse() {
             <ModifyCourseContext.Provider
               value={{ courseName, checkpoints, setCheckpoints }}
             >
-              <CreateCourseMap />
+              <ModifyCourseMap />
             </ModifyCourseContext.Provider>
             {!validNumberOfCheckpoints ? (
               <Alert

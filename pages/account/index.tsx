@@ -145,7 +145,6 @@ export default function Account() {
           </Breadcrumbs>
           <Typography
             variant="h4"
-            noWrap
             sx={{
               mt: 2,
               mb: 2,
@@ -157,7 +156,6 @@ export default function Account() {
           </Typography>
           <Typography
             variant="h6"
-            noWrap
             sx={{
               mt: 2,
               display: "flex",
@@ -167,7 +165,6 @@ export default function Account() {
             Correo electrónico
           </Typography>
           <Typography
-            noWrap
             sx={{
               mt: 1,
               mb: 2,
@@ -180,7 +177,6 @@ export default function Account() {
           </Typography>
           <Typography
             variant="h6"
-            noWrap
             sx={{
               mt: 2,
               display: "flex",
@@ -190,7 +186,6 @@ export default function Account() {
             Nombre completo
           </Typography>
           <Typography
-            noWrap
             sx={{
               mt: 1,
               mb: 2,
@@ -203,7 +198,6 @@ export default function Account() {
           </Typography>
           <Typography
             variant="h6"
-            noWrap
             sx={{
               mt: 2,
               display: "flex",
@@ -213,7 +207,6 @@ export default function Account() {
             Teléfono
           </Typography>
           <Typography
-            noWrap
             sx={{
               mt: 1,
               mb: 2,

@@ -118,7 +118,6 @@ export default function Login() {
           <form onSubmit={login} style={{ width: "100%" }}>
             <Typography
               variant="h4"
-              noWrap
               sx={{
                 mt: 2,
                 mb: 2,

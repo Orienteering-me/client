@@ -197,7 +197,6 @@ export default function EditCourse({ name }: any) {
             </Typography>
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 2,
                 display: "flex",

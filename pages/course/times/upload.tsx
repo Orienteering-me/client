@@ -375,7 +375,6 @@ export default function RunCourse({ course }: any) {
             </List>
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 4,
                 mb: 2,

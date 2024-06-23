@@ -184,7 +184,6 @@ export default function Course({ name }: any) {
           </Breadcrumbs>
           <Typography
             variant="h4"
-            noWrap
             sx={{
               mt: 2,
               display: "flex",
@@ -196,7 +195,6 @@ export default function Course({ name }: any) {
           </Typography>
           <Typography
             variant="h6"
-            noWrap
             sx={{
               mt: 2,
               display: "flex",
@@ -208,7 +206,6 @@ export default function Course({ name }: any) {
           </Typography>
           <Typography
             variant="h6"
-            noWrap
             sx={{
               mb: 2,
               display: "flex",

@@ -55,7 +55,7 @@ function MainPageMap({ courses }: MainPageMapProps) {
               <Button
                 variant="contained"
                 fullWidth
-                href={"course?name=" + name}
+                href={"/course?name=" + name}
                 style={{
                   marginBottom: 5,
                   fontWeight: 700,

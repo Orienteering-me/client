@@ -166,7 +166,6 @@ export default function EditAccount() {
           >
             <Typography
               variant="h4"
-              noWrap
               sx={{
                 mt: 2,
                 mb: 2,
@@ -178,7 +177,6 @@ export default function EditAccount() {
             </Typography>
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 2,
                 display: "flex",
@@ -217,7 +215,6 @@ export default function EditAccount() {
             )}
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 2,
                 display: "flex",
@@ -243,7 +240,6 @@ export default function EditAccount() {
             />
             <Typography
               variant="h6"
-              noWrap
               sx={{
                 mt: 2,
                 display: "flex",

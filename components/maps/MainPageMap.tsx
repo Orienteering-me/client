@@ -12,11 +12,11 @@ export interface CoursesProps {
   lng: number;
 }
 
-interface Props {
+interface MainPageMapProps {
   courses: CoursesProps[];
 }
 
-function MainPageMap({ courses }: Props) {
+function MainPageMap({ courses }: MainPageMapProps) {
   const center = { lat: 40.421078, lng: -3.704622 };
 
   function LocateMap() {

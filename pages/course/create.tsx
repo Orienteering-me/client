@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -16,32 +16,17 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AuthContext, ErrorContext } from "../_app";
 import { refreshTokens } from "../../hooks/refreshTokens";
+import {
+  ModifyCourseContext,
+  ModifyCourseContextCheckpoint,
+} from "../../hooks/ModifyCourseContext";
 
 const CreateCourseMap = dynamic(
-  () => import("../../components/maps/CreateCourseMap"),
+  () => import("../../components/maps/ModifyCourseMap"),
   {
     ssr: false,
   }
 );
-
-interface Checkpoint {
-  course: String;
-  number: number;
-  lat: number;
-  lng: number;
-}
-
-type CreateCourseContextType = {
-  courseName: string;
-  checkpoints: Checkpoint[];
-  setCheckpoints: (checkpoints: Checkpoint[]) => void;
-};
-
-export const CheckpointsContext = createContext<CreateCourseContextType>({
-  courseName: "",
-  checkpoints: [],
-  setCheckpoints: () => {},
-});
 
 export default function CreateCourse() {
   const auth = useContext(AuthContext);
@@ -49,7 +34,9 @@ export default function CreateCourse() {
   const router = useRouter();
 
   const [courseName, setCourseName] = useState("");
-  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
+  const [checkpoints, setCheckpoints] = useState<
+    ModifyCourseContextCheckpoint[] | null
+  >([]);
 
   const [courseNameHasForbiddenCharacter, setCourseNameHasForbiddenCharacter] =
     useState(false);
@@ -60,7 +47,7 @@ export default function CreateCourse() {
     event.preventDefault();
     const courseNameHasForbiddenCharacter = courseName.includes("&");
     setCourseNameHasForbiddenCharacter(courseNameHasForbiddenCharacter);
-    const validNumberOfCheckpoints = checkpoints.length >= 2;
+    const validNumberOfCheckpoints = checkpoints!.length >= 2;
     setValidNumberOfCheckpoints(validNumberOfCheckpoints);
 
     if (!courseNameHasForbiddenCharacter && validNumberOfCheckpoints) {
@@ -202,11 +189,11 @@ export default function CreateCourse() {
               * Para eliminar el último punto de control creado pulse Suprimir o
               Borrar.
             </Typography>
-            <CheckpointsContext.Provider
+            <ModifyCourseContext.Provider
               value={{ courseName, checkpoints, setCheckpoints }}
             >
               <CreateCourseMap />
-            </CheckpointsContext.Provider>
+            </ModifyCourseContext.Provider>
             {!validNumberOfCheckpoints ? (
               <Alert
                 variant="filled"
@@ -226,7 +213,7 @@ export default function CreateCourse() {
                 fontWeight: 700,
               }}
               onClick={() => {
-                setCheckpoints(checkpoints.slice(0, -1));
+                setCheckpoints(checkpoints!.slice(0, -1));
               }}
             >
               Borrar último punto de control

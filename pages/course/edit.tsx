@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Alert,
   Box,
@@ -16,33 +16,17 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { AuthContext, ErrorContext } from "../_app";
 import { refreshTokens } from "../../hooks/refreshTokens";
+import {
+  ModifyCourseContext,
+  ModifyCourseContextCheckpoint,
+} from "../../hooks/ModifyCourseContext";
 
 const CreateCourseMap = dynamic(
-  () => import("../../components/maps/CreateCourseMap"),
+  () => import("../../components/maps/ModifyCourseMap"),
   {
     ssr: false,
   }
 );
-
-interface Checkpoint {
-  _id: string;
-  number: number;
-  lat: number;
-  lng: number;
-  qr_code: string;
-}
-
-type EditCourseContextType = {
-  courseName: string;
-  checkpoints: Checkpoint[];
-  setCheckpoints: (checkpoints: Checkpoint[]) => void;
-};
-
-export const CheckpointsContext = createContext<EditCourseContextType>({
-  courseName: "",
-  checkpoints: [],
-  setCheckpoints: () => {},
-});
 
 export default function EditCourse({ name }: any) {
   const auth = useContext(AuthContext);
@@ -50,7 +34,9 @@ export default function EditCourse({ name }: any) {
   const router = useRouter();
 
   const [courseName, setCourseName] = useState("");
-  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
+  const [checkpoints, setCheckpoints] = useState<
+    ModifyCourseContextCheckpoint[] | null
+  >(null);
 
   const [courseNameHasForbiddenCharacter, setCourseNameHasForbiddenCharacter] =
     useState(false);
@@ -68,8 +54,18 @@ export default function EditCourse({ name }: any) {
         }
       );
       if (response.status == 200) {
+        const parsedCheckpoints = response.data.course.checkpoints.map(
+          (checkpoint: any) => {
+            return {
+              course: response.data.course.name,
+              number: checkpoint.number,
+              lat: checkpoint.lat,
+              lng: checkpoint.lng,
+            };
+          }
+        );
         setCourseName(response.data.course.name);
-        setCheckpoints(response.data.course.checkpoints);
+        setCheckpoints(parsedCheckpoints);
       }
     } catch (error) {
       console.log(error);
@@ -89,13 +85,13 @@ export default function EditCourse({ name }: any) {
     event.preventDefault();
     const courseNameHasForbiddenCharacter = courseName.includes("&");
     setCourseNameHasForbiddenCharacter(courseNameHasForbiddenCharacter);
-    const validNumberOfCheckpoints = checkpoints.length >= 2;
+    const validNumberOfCheckpoints = checkpoints!.length >= 2;
     setValidNumberOfCheckpoints(validNumberOfCheckpoints);
 
     if (!courseNameHasForbiddenCharacter && validNumberOfCheckpoints) {
       try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URI}/courses`,
+        const response = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URI}/courses?name=` + name,
           {
             name: courseName,
             checkpoints: checkpoints,
@@ -106,7 +102,7 @@ export default function EditCourse({ name }: any) {
             },
           }
         );
-        if (response.status == 201) {
+        if (response.status == 200) {
           router.push("/course?name=" + courseName);
         }
       } catch (error) {
@@ -252,11 +248,11 @@ export default function EditCourse({ name }: any) {
               * Para eliminar el último punto de control creado pulse Suprimir o
               Borrar.
             </Typography>
-            <CheckpointsContext.Provider
+            <ModifyCourseContext.Provider
               value={{ courseName, checkpoints, setCheckpoints }}
             >
               <CreateCourseMap />
-            </CheckpointsContext.Provider>
+            </ModifyCourseContext.Provider>
             {!validNumberOfCheckpoints ? (
               <Alert
                 variant="filled"
@@ -291,7 +287,7 @@ export default function EditCourse({ name }: any) {
                 fontWeight: 700,
               }}
             >
-              Crear recorrido
+              Editar recorrido
             </Button>
           </form>
         </Box>

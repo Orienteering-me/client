@@ -11,13 +11,13 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
 import { Icon } from "leaflet";
-import { CheckpointsContext } from "../../pages/course/create";
 import { Typography } from "@mui/material";
+import { ModifyCourseContext } from "../../hooks/ModifyCourseContext";
 
 function CreateCourseMap() {
   const center = { lat: 40.421078, lng: -3.704622 };
   const { courseName, checkpoints, setCheckpoints } =
-    useContext(CheckpointsContext);
+    useContext(ModifyCourseContext);
 
   function LocateMap() {
     const map = useMap();
@@ -35,10 +35,10 @@ function CreateCourseMap() {
       dblclick(e) {
         const clicked_position = { lat: e.latlng.lat, lng: e.latlng.lng };
         setCheckpoints(
-          checkpoints.concat([
+          checkpoints!.concat([
             {
               course: courseName,
-              number: checkpoints.length,
+              number: checkpoints!.length,
               lat: clicked_position.lat,
               lng: clicked_position.lng,
             },
@@ -50,41 +50,12 @@ function CreateCourseMap() {
           e.originalEvent.key == "Delete" ||
           e.originalEvent.key == "Backspace"
         ) {
-          setCheckpoints(checkpoints.slice(0, -1));
+          setCheckpoints(checkpoints!.slice(0, -1));
         }
       },
     });
 
-    return checkpoints.map(({ lat, lng, number }, index) => (
-      <Marker
-        position={[lat, lng]}
-        icon={
-          new Icon({
-            iconUrl:
-              index == 0
-                ? "/start_checkpoint.svg"
-                : index == checkpoints.length - 1
-                ? "/finish_checkpoint.svg"
-                : "/checkpoint.svg",
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-          })
-        }
-        key={index}
-      >
-        <Popup>
-          <Typography
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              textAlign: "center",
-            }}
-          >
-            Punto de control {number + 1} con latitud {lat} y longitud {lng}
-          </Typography>
-        </Popup>
-      </Marker>
-    ));
+    return null;
   }
 
   return (
@@ -101,6 +72,36 @@ function CreateCourseMap() {
           attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
           url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
         />
+        {checkpoints!.map(({ lat, lng, number }, index) => (
+          <Marker
+            position={[lat, lng]}
+            icon={
+              new Icon({
+                iconUrl:
+                  index == 0
+                    ? "/start_checkpoint.svg"
+                    : index == checkpoints!.length - 1
+                    ? "/finish_checkpoint.svg"
+                    : "/checkpoint.svg",
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+              })
+            }
+            key={index}
+          >
+            <Popup>
+              <Typography
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  textAlign: "center",
+                }}
+              >
+                Punto de control {number + 1} con latitud {lat} y longitud {lng}
+              </Typography>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
     </div>
   );

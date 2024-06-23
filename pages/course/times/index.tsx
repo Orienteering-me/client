@@ -4,7 +4,7 @@ import {
   Breadcrumbs,
   Button,
   Container,
-  Table,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import axios from "axios";
@@ -30,7 +30,7 @@ export default function Results({ course }: any) {
   const errorContext = useContext(ErrorContext);
 
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [hasUploadedResults, setHasUploadedResults] = useState<boolean>(false);
+  const [haveUploadedTimes, setHaveUploadedResults] = useState<boolean>(false);
   const [results, setResults] = useState<Result[] | null>(null);
 
   async function getRanking() {
@@ -45,7 +45,7 @@ export default function Results({ course }: any) {
       );
       if (response.status == 200) {
         setIsAdmin(response.data.is_admin);
-        setHasUploadedResults(response.data.has_uploaded);
+        setHaveUploadedResults(response.data.has_uploaded);
         setResults(response.data.results);
       }
     } catch (error) {
@@ -81,7 +81,7 @@ export default function Results({ course }: any) {
         button_text="Iniciar sesión"
       />
     );
-  } else if (results != null && isAdmin != null && hasUploadedResults != null) {
+  } else if (results != null && isAdmin != null && haveUploadedTimes != null) {
     return (
       <Container
         maxWidth={false}
@@ -169,18 +169,25 @@ export default function Results({ course }: any) {
           {isAdmin ? (
             <></>
           ) : (
-            <Button
-              variant="contained"
-              disabled={hasUploadedResults}
-              style={{
-                marginTop: 25,
-                fontWeight: 700,
-                color: "white",
-              }}
-              href={"/course/times/upload?course=" + course}
+            <Tooltip
+              title={haveUploadedTimes ? "Ya has subido tus resultados" : ""}
             >
-              Subir resultados
-            </Button>
+              <div>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  disabled={haveUploadedTimes}
+                  style={{
+                    marginTop: 25,
+                    fontWeight: 700,
+                    color: "white",
+                  }}
+                  href={"/course/times/upload?course=" + course}
+                >
+                  Subir resultados
+                </Button>
+              </div>
+            </Tooltip>
           )}
         </Box>
       </Container>

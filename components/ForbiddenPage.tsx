@@ -1,6 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 
-interface Props {
+interface ForbiddenPageProps {
   title: string;
   message: string;
   button_text: string;
@@ -8,7 +8,12 @@ interface Props {
 }
 
 // Forbidden page component to show in forbidden pages
-function ForbiddenPage({ title, message, button_text, button_href }: Props) {
+function ForbiddenPage({
+  title,
+  message,
+  button_text,
+  button_href,
+}: ForbiddenPageProps) {
   return (
     <Container
       maxWidth={false}

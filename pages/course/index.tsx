@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import axios from "axios";
@@ -28,7 +29,6 @@ const ViewCourseMap = dynamic(
 );
 
 interface Checkpoint {
-  _id: string;
   number: number;
   lat: number;
   lng: number;
@@ -49,6 +49,9 @@ export default function Course({ name }: any) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const [userIsAdmin, setUserIsAdmin] = useState<boolean | null>(null);
+  const [hasUploadedTimes, setHasUploadedTimes] = useState<boolean | null>(
+    null
+  );
   const [courseData, setCourseData] = useState<CourseData | null>(null);
 
   async function getCourseData() {
@@ -62,12 +65,25 @@ export default function Course({ name }: any) {
         }
       );
       if (response.status == 200) {
-        setUserIsAdmin(response.data.is_admin);
+        const parsedCheckpoints = response.data.course.checkpoints.map(
+          (checkpoint: any) => {
+            return {
+              course: response.data.course.name,
+              number: checkpoint.number,
+              lat: checkpoint.lat,
+              lng: checkpoint.lng,
+              qr_code: checkpoint.qr_code,
+            };
+          }
+        );
         setCourseData({
           name: response.data.course.name,
           admin: response.data.course.admin.name,
-          checkpoints: response.data.course.checkpoints,
+          checkpoints: parsedCheckpoints,
         });
+        setUserIsAdmin(response.data.is_admin);
+        setHasUploadedTimes(response.data.has_uploaded_times);
+        console.log(response.data.has_uplodaded_times);
       }
     } catch (error) {
       console.log(error);
@@ -131,7 +147,11 @@ export default function Course({ name }: any) {
         button_text="Iniciar sesión"
       />
     );
-  } else if (courseData != null && userIsAdmin != null) {
+  } else if (
+    courseData != null &&
+    userIsAdmin != null &&
+    hasUploadedTimes != null
+  ) {
     return (
       <Container
         maxWidth={false}
@@ -222,17 +242,28 @@ export default function Course({ name }: any) {
           </Button>
           {userIsAdmin ? (
             <div>
-              <Button
-                fullWidth
-                variant="outlined"
-                style={{
-                  marginTop: 5,
-                  fontWeight: 700,
-                }}
-                href={"/course/edit?name=" + name}
+              <Tooltip
+                title={
+                  hasUploadedTimes
+                    ? "No se puede editar una carrera con resultados subidos"
+                    : ""
+                }
               >
-                Editar carrera
-              </Button>
+                <div>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    style={{
+                      marginTop: 5,
+                      fontWeight: 700,
+                    }}
+                    disabled={hasUploadedTimes}
+                    href={"/course/edit?name=" + name}
+                  >
+                    Editar carrera
+                  </Button>
+                </div>
+              </Tooltip>
               <Fragment>
                 <Button
                   fullWidth

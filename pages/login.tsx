@@ -66,7 +66,7 @@ export default function Login() {
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        errorContext.setError("La contraseña introducida es incorrecta.");
+        errorContext.setError("Los datos que ha introducido son incorrectos.");
       } else {
         errorContext.setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."

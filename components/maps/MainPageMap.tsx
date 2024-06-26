@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button, Typography } from "@mui/material";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import "leaflet-defaulticon-compatibility";
@@ -56,6 +63,14 @@ function MainPageMap({ courses }: MainPageMapProps) {
           })
           .map(({ name, admin, lat, lng }) => (
             <Marker position={[lat, lng]} key={name}>
+              <Tooltip
+                direction="top"
+                offset={[-15, -15]}
+                opacity={1}
+                permanent
+              >
+                {name}
+              </Tooltip>
               <Popup>
                 <Typography
                   sx={{

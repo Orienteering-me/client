@@ -127,10 +127,11 @@ export default function RunCourse({ course }: any) {
       for (let index = 0; index < images.length; index++) {
         try {
           const formData = new FormData();
+          formData.append("course", course);
           formData.append("image", images[index]);
 
           const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URI}/times?course=` + course,
+            `${process.env.NEXT_PUBLIC_API_URI}/times`,
             formData,
             {
               headers: {

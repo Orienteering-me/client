@@ -83,6 +83,16 @@ export default function EditAccount() {
           }
         );
         if (response.status == 200) {
+          auth.setRefreshToken(response.data.refresh_token);
+          localStorage.setItem(
+            "orienteering-me-refresh-token",
+            response.data.refresh_token
+          );
+          auth.setAccessToken(response.data.access_token);
+          sessionStorage.setItem(
+            "orienteering-me-access-token",
+            response.data.access_token
+          );
           alert("La información de la cuenta se ha actualizado correctamente.");
           router.push("/account");
         }

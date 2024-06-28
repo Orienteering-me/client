@@ -14,15 +14,14 @@ import Link from "next/link";
 import { AuthContext, ErrorContext } from "../../_app";
 import { refreshTokens } from "../../../hooks/refreshTokens";
 import ResultsTable from "../../../components/ResultsTable";
-import AdminResultsTable from "../../../components/AdminResultsTable";
 
 interface Result {
-  course: string;
   user: {
     email: string;
     name: string;
   };
-  time: number;
+  total_time: number;
+  checkpoint_times: { number: number; time: number }[] | null;
 }
 
 export default function Results({ course }: any) {
@@ -44,9 +43,61 @@ export default function Results({ course }: any) {
         }
       );
       if (response.status == 200) {
+        const parsedResults = response.data.results
+          .map((result: any) => {
+            if (result.times != null) {
+              // Sorts the checkpoints times by the checkpoint number
+              result.times.sort((time1: any, time2: any) => {
+                if (time1.checkpoint.number > time2.checkpoint.number) {
+                  return 1;
+                }
+                if (time1.checkpoint.number < time2.checkpoint.number) {
+                  return -1;
+                }
+                return 0;
+              });
+              return {
+                course: result.course,
+                user: {
+                  email: result.user.email,
+                  name: result.user.name,
+                },
+                total_time:
+                  new Date(
+                    result.times[result.times.length - 1].time
+                  ).getTime() - new Date(result.times[0].time).getTime(),
+                checkpoint_times: result.times.map((time: any) => {
+                  return {
+                    number: time.checkpoint.number,
+                    time: new Date(time.time).getTime(),
+                  };
+                }),
+              };
+            } else {
+              return {
+                course: result.course,
+                user: {
+                  email: result.user.email,
+                  name: result.user.name,
+                },
+                total_time: Number.MAX_SAFE_INTEGER,
+                checkpoint_times: null,
+              };
+            }
+          })
+          .sort((result1: any, result2: any) => {
+            // Sorts the results by the total time
+            if (result1.total_time > result2.total_time) {
+              return 1;
+            }
+            if (result1.total_time < result2.total_time) {
+              return -1;
+            }
+            return 0;
+          });
         setIsAdmin(response.data.is_admin);
         setHaveUploadedResults(response.data.has_uploaded);
-        setResults(response.data.results);
+        setResults(parsedResults);
       }
     } catch (error) {
       console.log(error);
@@ -136,36 +187,33 @@ export default function Results({ course }: any) {
           >
             {course}
           </Typography>
-          {isAdmin ? (
-            <AdminResultsTable
-              rows={results.map((result, index) => {
+          <ResultsTable
+            rows={results.map((result, index) => {
+              if (result.checkpoint_times == null) {
                 return {
                   id: result.user.email,
-                  position:
-                    result.time != Number.MAX_SAFE_INTEGER
-                      ? index + 1 + ""
-                      : "_",
+                  position: "_",
                   name: result.user.name,
-                  time: result.time,
+                  total_time: Number.MAX_SAFE_INTEGER,
                 };
-              })}
-              course={course}
-            />
-          ) : (
-            <ResultsTable
-              rows={results.map((result, index) => {
+              } else {
                 return {
                   id: result.user.email,
-                  position:
-                    result.time != Number.MAX_SAFE_INTEGER
-                      ? index + 1 + ""
-                      : "_",
+                  position: index + 1 + "",
                   name: result.user.name,
-                  time: result.time,
+                  total_time: result.total_time,
                 };
-              })}
-            />
-          )}
+              }
+            })}
+            checkpoint_times={results.map((result) => {
+              return {
+                user: { email: result.user.email, name: result.user.name },
+                times: result.checkpoint_times,
+              };
+            })}
+            course={course}
+            is_admin={isAdmin}
+          />
           {isAdmin ? (
             <></>
           ) : (

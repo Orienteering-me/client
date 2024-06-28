@@ -19,17 +19,6 @@ function CreateCourseMap() {
   const { courseName, checkpoints, setCheckpoints } =
     useContext(ModifyCourseContext);
 
-  function LocateMap() {
-    const map = useMap();
-    useEffect(() => {
-      map.zoomControl.setPosition("bottomright");
-      map.locate().on("locationfound", function (e) {
-        map.setView([e.latlng.lat, e.latlng.lng], 8);
-      });
-    }, [map]);
-    return null;
-  }
-
   function CheckpointManager() {
     useMapEvents({
       dblclick(e) {
@@ -66,7 +55,6 @@ function CreateCourseMap() {
         doubleClickZoom={false}
         maxZoom={17}
       >
-        <LocateMap />
         <CheckpointManager />
         <TileLayer
           attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'

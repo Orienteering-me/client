@@ -18,18 +18,8 @@ interface CourseMapProps {
   auth: boolean;
 }
 
-function ViewCourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
-  const Center = { lat: 40.421078, lng: -3.704622 };
-
-  function LocateMap() {
-    const map = useMap();
-
-    useEffect(() => {
-      map.setView([checkpoints[0].lat, checkpoints[0].lng]);
-    }, [map]);
-
-    return null;
-  }
+function ViewCourseMap({ course_name, checkpoints }: CourseMapProps) {
+  const Center = { lat: checkpoints[0].lat, lng: checkpoints[0].lng };
 
   function downloadQR(number: number) {
     const canvas: any = document.getElementById("qr-code");
@@ -48,11 +38,10 @@ function ViewCourseMap({ course_name, checkpoints, auth }: CourseMapProps) {
     <div className="container" style={{ height: "100%", width: "100%" }}>
       <MapContainer
         center={Center}
-        zoom={10}
+        zoom={13}
         doubleClickZoom={false}
         maxZoom={17}
       >
-        <LocateMap />
         <TileLayer
           attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
           url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"

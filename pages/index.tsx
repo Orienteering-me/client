@@ -82,7 +82,7 @@ export default function Main() {
           alignItems: "left",
           padding: "2% 5%",
           backgroundColor: "#ffffff",
-          width: { xs: "80%", md: "50%" },
+          width: { xs: "90%", md: "50%" },
           borderRadius: "25px",
         }}
       >

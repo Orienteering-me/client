@@ -17,16 +17,15 @@ import Link from "next/link";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import LoadingBox from "../components/LoadingBox";
-import { AuthContext, ErrorContext } from "./_app";
+import { AuthContext } from "./_app";
+import ErrorAlert from "../components/ErrorAlert";
 
 // Login page
 export default function Login() {
   const auth = useContext(AuthContext);
-  const errorContext = useContext(ErrorContext);
   const router = useRouter();
-
+  const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -66,9 +65,9 @@ export default function Login() {
     } catch (error) {
       console.log(error);
       if (error.response.status == 401) {
-        errorContext.setError("Los datos que ha introducido son incorrectos.");
+        setError("Los datos que ha introducido son incorrectos.");
       } else {
-        errorContext.setError(
+        setError(
           "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
         );
       }
@@ -83,7 +82,24 @@ export default function Login() {
   }, [auth]);
 
   if (auth.refreshToken == null) {
-    return <LoadingBox />;
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <LoadingBox />
+        <ErrorAlert
+          open={Boolean(error)}
+          error={error}
+          onClose={() => setError("")}
+        />
+      </Container>
+    );
   } else if (auth.refreshToken == "") {
     return (
       <Container
@@ -188,9 +204,31 @@ export default function Login() {
             </Button>
           </form>
         </Box>
+        <ErrorAlert
+          open={Boolean(error)}
+          error={error}
+          onClose={() => setError("")}
+        />
       </Container>
     );
   } else {
-    return <LoadingBox />;
+    return (
+      <Container
+        maxWidth={false}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        disableGutters
+      >
+        <LoadingBox />
+        <ErrorAlert
+          open={Boolean(error)}
+          error={error}
+          onClose={() => setError("")}
+        />
+      </Container>
+    );
   }
 }

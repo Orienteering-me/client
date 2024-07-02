@@ -303,7 +303,7 @@ export default function ResultsTable({
                                 }}
                               >
                                 <TableCell component="th" scope="row">
-                                  {rowDetail.number}
+                                  {rowDetail.number + 1}
                                 </TableCell>
                                 <TableCell />
                                 <TableCell component="th" scope="row">

@@ -126,8 +126,9 @@ export default function Main() {
         >
           En Orienteering.me podrás crear carreras de orientación estableciendo
           puntos de control de forma sencilla directamente en un mapa, generando
-          QRs para llevar el control de los participantes. Y si lo que buscas es
-          participar, puedes buscar carreras en tu zona en nuestro buscador.
+          QRs para llevar el control de los participantes. Y si lo que quieres
+          es participar, puedes encontrar carreras en tu zona en nuestro
+          buscador.
         </Typography>
         <Button
           variant="contained"

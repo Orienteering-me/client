@@ -54,6 +54,10 @@ function CreateCourseMap() {
         zoom={5}
         doubleClickZoom={false}
         maxZoom={17}
+        style={{
+          height: "60vh",
+          width: "100%",
+        }}
       >
         <CheckpointManager />
         <TileLayer

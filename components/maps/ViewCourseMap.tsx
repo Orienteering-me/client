@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  Tooltip,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { Icon } from "leaflet";
 import { Button, Container, Typography } from "@mui/material";
@@ -67,6 +74,9 @@ function ViewCourseMap({ course_name, checkpoints }: CourseMapProps) {
             }
             key={number}
           >
+            <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent>
+              {number + 1}
+            </Tooltip>
             <Popup>
               <Typography
                 sx={{

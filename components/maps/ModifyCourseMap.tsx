@@ -4,6 +4,7 @@ import {
   Marker,
   Popup,
   TileLayer,
+  Tooltip,
   useMap,
   useMapEvents,
 } from "react-leaflet";
@@ -81,6 +82,9 @@ function CreateCourseMap() {
             }
             key={index}
           >
+            <Tooltip direction="top" offset={[0, -20]} opacity={1} permanent>
+              {number + 1}
+            </Tooltip>
             <Popup>
               <Typography
                 sx={{

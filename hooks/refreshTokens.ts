@@ -31,6 +31,8 @@ export async function refreshTokens(auth: any, errorContext: any) {
     localStorage.removeItem("orienteering-me-refresh-token");
     if (error.response.status == 404) {
       errorContext.setError("La cuenta actual no existe.");
+    } else if (error.response.status == 401) {
+      errorContext.setError("");
     } else {
       errorContext.setError(
         "Ha ocurrido un error procesando la petición. Por favor, inténtelo más tarde."
